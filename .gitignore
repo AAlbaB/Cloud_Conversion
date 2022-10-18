@@ -1,0 +1,8 @@
+#Entornos virtuales
+venv/
+
+#Bases de datos
+instance/
+
+#Archvivos temporales
+*.pyc
