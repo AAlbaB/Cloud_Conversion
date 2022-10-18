@@ -41,6 +41,7 @@ class FileSchema(SQLAlchemySchema):
     id = fields.Integer()
     timeStamp = fields.String()
     fileName = fields.String()
+    newFormat = fields.String()
     status = fields.String()
     user = fields.Integer()
 

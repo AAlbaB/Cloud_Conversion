@@ -1,5 +1,6 @@
 from flaskr import create_app
 from flask_restful import Api
+from flask_jwt_extended import JWTManager
 from .modelos import db, User, File
 from .modelos import FileSchema, UserSchema
 from .vistas import VistaUser, VistaUsers, VistaSignIn, VistaLogIn
@@ -16,6 +17,8 @@ api.add_resource(VistaUsers, '/users')
 api.add_resource(VistaUser, '/user/<int:id_user>')
 api.add_resource(VistaSignIn, '/signin')
 api.add_resource(VistaLogIn, '/login')
+
+jwt = JWTManager(app)
 
 '''with app.app_context():
     user_schema = UserSchema()
