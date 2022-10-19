@@ -1,11 +1,18 @@
 import re
+from datetime import datetime
+from celery import Celery
 from flask_restful import Resource
 from flask_jwt_extended import create_access_token, jwt_required
 from flask import request
 from ..modelos import db, User, UserSchema, File, FileSchema
 
+celery_app = Celery(__name__, broker = 'redis://localhost:6379/0')
 user_schema = UserSchema()
 file_schema = FileSchema()
+
+@celery_app.task(name = 'registrar_log')
+def registrar_log(*args):
+    pass
 
 class VistaUsers(Resource):
 
@@ -86,6 +93,8 @@ class VistaLogIn(Resource):
                                             User.password == request.json['password']).first()
 
                 if usuario:
+                    args = (request.json['username'], datetime.utcnow())
+                    registrar_log.apply_async(args = args, queue = 'logs')
                     token_de_acceso = create_access_token(identity = usuario.username)
                     return {'mensaje':'Inicio de sesión exitoso',
                             'token': token_de_acceso}, 200
