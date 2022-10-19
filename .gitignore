@@ -1,8 +1,13 @@
 #Entornos virtuales
 venv/
+env/
 
 #Bases de datos
 instance/
+*.db
+tareas/original/
+tareas/convertido/
 
 #Archvivos temporales
 *.pyc
+log_signin.txt

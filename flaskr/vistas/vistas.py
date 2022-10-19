@@ -14,6 +14,10 @@ file_schema = FileSchema()
 def registrar_log(*args):
     pass
 
+@celery_app.task(name = 'convertir_audio')
+def convertir_audio(*args):
+    pass
+
 class VistaUsers(Resource):
 
     def get(self):
@@ -94,7 +98,7 @@ class VistaLogIn(Resource):
 
                 if usuario:
                     args = (request.json['username'], datetime.utcnow())
-                    registrar_log.apply_async(args = args, queue = 'logs')
+                    registrar_log.apply_async(args = args)
                     token_de_acceso = create_access_token(identity = usuario.username)
                     return {'mensaje':'Inicio de sesión exitoso',
                             'token': token_de_acceso}, 200
@@ -105,3 +109,23 @@ class VistaLogIn(Resource):
             except Exception as e:
                 return {'mensaje': 'A ocurrido un error, por favor vuelve a intentar'}, 503
 
+class VistaFilesUser(Resource):
+
+    @jwt_required()
+    def post(self, id_user):
+
+        origin_path = request.json['fileName']
+        new_format = request.json['newFormat']
+        new_path = 'convertido'
+
+        new_file = File(fileName = origin_path, newFormat = new_format)
+        user = User.query.get_or_404(id_user)
+        user.files.append(new_file)
+        db.session.commit()
+  
+        name = ((origin_path.split("/"))[1].split("."))[0]
+        dest_path = new_path + '/' + name + '.' + new_format
+        args = (origin_path, dest_path, new_format)
+        convertir_audio.apply_async(args = args)
+
+        return file_schema.dump(new_file)
