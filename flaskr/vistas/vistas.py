@@ -1,4 +1,5 @@
 import re
+import os
 from datetime import datetime
 from celery import Celery
 from flask_restful import Resource
@@ -79,7 +80,7 @@ class VistaSignIn(Resource):
                         return {'mensaje': 'A ocurrido un error, por favor vuelve a intentar'}, 503
                 
                 else:
-                    return {'mensaje': 'Contaseñas debe contener minusculas, mayusculas y numeros'}, 401
+                    return {'mensaje': 'Contaseñas debe contener minusculas, mayusculas y numeros'}, 400
 
             else:
                 return {'mensaje': 'Contaseñas no coinciden, por favor vuelve a intentar'}, 401
@@ -117,15 +118,38 @@ class VistaFilesUser(Resource):
         origin_path = request.json['fileName']
         new_format = request.json['newFormat']
         new_path = 'convertido'
+        formatos = ["mp3", "ogg", "wav"]
 
-        new_file = File(fileName = origin_path, newFormat = new_format)
-        user = User.query.get_or_404(id_user)
-        user.files.append(new_file)
-        db.session.commit()
-  
-        name = ((origin_path.split("/"))[1].split("."))[0]
-        dest_path = new_path + '/' + name + '.' + new_format
-        args = (origin_path, dest_path, new_format)
-        convertir_audio.apply_async(args = args)
+        if os.path.exists(origin_path):
 
-        return file_schema.dump(new_file)
+            old_path = origin_path.split("/")
+            len_split = len(old_path)
+            name_file = old_path[len_split - 1].split(".")[0]
+            origin_format = old_path[len_split - 1].split(".")[1]
+
+            if origin_format in formatos:
+
+                if new_format in formatos:
+
+                    new_file = File(fileName = origin_path, newFormat = new_format)
+                    user = User.query.get_or_404(id_user)
+                    user.files.append(new_file)
+                    db.session.commit()
+            
+                    dest_path = new_path + '/' + name_file + '.' + new_format
+                    args = (origin_path, dest_path, origin_format, new_format)
+                    convertir_audio.apply_async(args = args)
+
+                    new_file.status = "processed"
+                    db.session.commit()
+
+                    return file_schema.dump(new_file)
+                
+                else:
+                    return {'mensaje': 'El formato destino no es aceptado (mp3, ogg, wav)'}, 400
+
+            else:
+                return {'mensaje': 'El formato de origen no es aceptado (mp3, ogg, wav)'}, 400
+
+        else:
+            return {'mensaje': 'La ruta de origen no existe, por favor verificar'}, 400
