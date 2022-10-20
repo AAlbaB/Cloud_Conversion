@@ -8,9 +8,3 @@ pydub==0.25.1
 SQLAlchemy==1.4.42
 marshmallow-sqlalchemy==0.28.1
 redis==4.3.4
-
-#Notas:
-#Correr Celery
-#1. cd tareas
-#2. celery -A tareas worker -l info -Q logs
-#En otra consola: 1. cd flaskr, flask run
