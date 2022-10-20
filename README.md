@@ -1,21 +1,22 @@
-## Instalar Pydub para convertir archivos de audio:
-1. Instalar pydub con: `pip install pydub`
-1. Se debe verificar la intalacion de ffprobe osino instalarlo con: `pip install ffprobe`
-2. Actualizar paquetes: `sudo apt update`
-3. Instalar el paquete faltante: `sudo apt install ffmpeg`
-
-## Instalar requirements:
-Eecutar el comando `python3 -m pip install -r requirements.txt`
+## Instalaciones:
+Se deben realizar las siguientes instalaciones para ejecutar el programa
+1. Actualizar paquetes: `sudo apt-get update`
+2. Python 3.x: `sudo apt-get install python3`
+3. Gestor de paquetes: `sudo apt-get install python3-pip`
+4. Gestor de ambientes virtuales: `sudo apt-get install python3-venv`
+5. Servidor de redis: `sudo apt-get install redis-server` y `sudo systemctl enable redis-server.service`
+6. Paquete de audios: `sudo apt-get install ffmpeg`
 
 ## Ejecutar aplicacion:
-### Instalar paqquete de redis-server usando los siguientes comandos por una sola vez
-1. Ejecutar comando: `sudo apt install redis-server`
-2. Ejecutar comando: `redis-server`
+Para el correcto funcionamiento del programa, se debe crear un ambiente virtual e instalar unos paquetes
+### Preparar ambiente virutal:
+1. Crear ambiente virtual: `python3 -m venv venv`
+2. Activar ambiente virtual: `source venv/bin/activate`
+3. Validar en la consola que se tiene activo el ambiente virtual, para desactivar env: `deactivate`
+4. Instalar requirements: `python3 -m pip install -r requirements.txt`
+5. Verificar funcionalidad de redis: `redis-server`
+6. Validar que redis este en ejecucion (salir con Q): `sudo systemctl status redis`
 
-### Correr Celery
-1. cd tareas
-2. celery -A tareas worker -l info
-3. En otra consola: cd flaskr y flask run
-
-## Activar entorno virtual:
-`source venv/bin/activate`
+### Correr programa:
+1. En una consola: `cd tareas` y `celery -A tareas worker -l info`
+2. En otra consola: `cd flaskr` y `flask run`
