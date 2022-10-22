@@ -1,9 +1,10 @@
 import re
 import os
+from sqlalchemy import desc
 from datetime import datetime
 from celery import Celery
 from flask_restful import Resource
-from flask_jwt_extended import create_access_token, jwt_required
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 from flask import request
 from ..modelos import db, User, UserSchema, File, FileSchema
 
@@ -88,7 +89,6 @@ class VistaSignIn(Resource):
         else:
             return {'mensaje': 'Usuario ya existe, por favor iniciar sesión'}, 203
 
-
 class VistaLogIn(Resource):
 
     def post(self):
@@ -100,7 +100,7 @@ class VistaLogIn(Resource):
                 if usuario:
                     args = (request.json['username'], datetime.utcnow())
                     registrar_log.apply_async(args = args)
-                    token_de_acceso = create_access_token(identity = usuario.username)
+                    token_de_acceso = create_access_token(identity = usuario.id)
                     return {'mensaje':'Inicio de sesión exitoso',
                             'token': token_de_acceso}, 200
                             
@@ -131,7 +131,7 @@ class VistaFilesUser(Resource):
 
                 if new_format in formatos:
 
-                    new_file = File(fileName = origin_path, newFormat = new_format)
+                    new_file = File(fileName = (name_file + "." + origin_format), newFormat = new_format)
                     user = User.query.get_or_404(id_user)
                     user.files.append(new_file)
                     db.session.commit()
@@ -153,3 +153,91 @@ class VistaFilesUser(Resource):
 
         else:
             return {'mensaje': 'La ruta de origen no existe, por favor verificar'}, 400
+
+class VistaTasksUser(Resource):
+
+    @jwt_required()
+    def get(self):
+        # Retorna todas las tareas de un usuario con parametros
+        # Endpoint http://localhost:5000/api/tasks?max=100&order=0
+        
+        current_user = get_jwt_identity()
+        user = User.query.get(current_user)
+        user_id = user.id
+            
+        max = request.args.get('max', default = 100, type = int)
+        order = request.args.get('order', default = 0, type = int)
+        if max < 1: 
+            return {'mensaje':'El valor pasado en max debe ser un numero entero positivo.'}, 400
+
+        if order not in (0, 1): 
+            return {'mensaje':'El valor numerico pasado en order debe ser (0 o 1)'}, 400
+            
+        if db.session.query(File.query.filter(File.user == user_id).exists()).scalar():
+                
+            tasks = File.query.filter(File.user == user_id)
+
+            if order == 1: tasks = tasks.order_by(desc(File.id))
+            elif order == 0: tasks = tasks.order_by(File.id)
+
+            count = 1
+            lista = []
+            for ta in tasks:
+                lista.append({'id': ta.id, 'timeStamp': (ta.timeStamp).strftime('%d/%m/%Y'),
+                        'fileName': ta.fileName, 'newFormat': ta.newFormat,
+                        'status': ta.status})
+
+                if count >= max: break
+                else: count += 1
+
+            return lista
+            
+        else: 
+            return {'mensaje':'El usuario {} no tiene tareas registradas'.format(user_id)}, 400
+
+class VistaTask(Resource):
+
+    @jwt_required()
+    def get(self, id_task):
+        # Retorna la tarea con id asigando
+        # Endpoint http://localhost:5000/api/tasks/id_task
+
+        current_user = get_jwt_identity()
+        user = User.query.get(current_user)
+        user_id = user.id
+
+        if db.session.query(File.query.filter(File.id == id_task,
+            File.user == user_id).exists()).scalar():
+
+            return file_schema.dump(File.query.get_or_404(id_task))
+
+        else:
+            return {'mensaje':'La tarea no existe para el usuario'}, 400
+
+    @jwt_required()
+    def delete(self, id_task):
+        # Elimina la tarea y archivos
+        # Endpoint http://localhost:5000/api/tasks/id_task
+
+        current_user = get_jwt_identity()
+        user = User.query.get(current_user)
+        user_id = user.id
+
+        if db.session.query(File.query.filter(File.id == id_task,
+            File.user == user_id).exists()).scalar():
+
+            task_delete = File.query.get(id_task)
+
+            #TODO: Implementar borrado de archivo origen
+            #os.remove(task_delete.origin_path)
+
+            #TODO: Implmentar borrado si se convirtio
+            #if task_delete.status == 'processed':
+                #os.remove(task_delete.new_path)
+
+            db.session.delete(task_delete)
+            db.session.commit()
+            return {'mensaje': 'Tarea eliminiada correctamente'}, 200
+
+        else:
+            return {'mensaje':'La tarea no existe para el usuario'}, 400
