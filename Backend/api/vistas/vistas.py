@@ -5,7 +5,7 @@ from datetime import datetime
 from celery import Celery
 from flask_restful import Resource
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
-from flask import request
+from flask import request, send_file
 from ..modelos import db, User, UserSchema, File, FileSchema
 from werkzeug.utils import secure_filename
 
@@ -247,6 +247,65 @@ class VistaTask(Resource):
         else:
             return {'mensaje':'La tarea no existe para el usuario'}, 400
 
+
+    @jwt_required()
+    def put(self, id_task):
+        # Actualiza la tarea con id asigando
+        # Endpoint http://localhost:5000/api/tasks/id_task
+
+        current_user = get_jwt_identity()
+        user = User.query.get(current_user)
+        user_id = user.id
+        user_name = user.username
+
+        try:
+            new_format = request.form['newFormat']
+        except:
+            return {'mensaje':'Error: Definir extension de destino'}, 400
+
+        if new_format is None: 
+            return {'mensaje':'Error: Revisar parametros de ingreso'}, 400
+
+        new_format = new_format.lower()
+
+        if new_format not in FORMATOS:
+                return {'mensaje':'Error: Formato destino no valido (wav, ogg, mp3)'}, 400
+
+        if db.session.query(File.query.filter(File.id == id_task,
+            File.user == user_id).exists()).scalar():
+
+            put_task = File.query.get(id_task)
+
+            if new_format == put_task.newFormat:
+                return {'mensaje':'Ya se solicito el cambio a ese formato'}, 200
+
+            date_actual = datetime.now()
+            date_actual = date_actual.strftime('%d%m%Y%H%M%S')
+            file_origen = put_task.fileName
+
+            old_format = file_origen.split('.')[-1].lower()
+            base_file = file_origen[:(len(file_origen) - len(old_format) - 1)]
+
+            file_destino = f'{user_name}_{date_actual}_{base_file}.{new_format}'.replace(' ','_')
+            path_destino = f'{RUTA_CONVERTIDA}/{file_destino}'
+
+            #if put_task.status == "processed":
+                #os.remove(put_task.path_destino)
+
+            put_task.newFormat = new_format
+            #put_task.path_destino = path_destino
+            put_task.status = 'uploaded'
+            db.session.commit()
+
+            task_id = put_task.id
+            #args = (path_origen, path_destino, old_format, new_format, file_origen, task_id)
+            #convertir_audio.apply_async(args = args)
+
+            return {'mensaje':'La tarea fue actualizada para convrsion'}, 200
+
+        else:
+            return {'mensaje':'La tarea no existe para el usuario'}, 400
+
     @jwt_required()
     def delete(self, id_task):
         # Elimina la tarea y archivos
@@ -274,3 +333,42 @@ class VistaTask(Resource):
 
         else:
             return {'mensaje':'La tarea no existe para el usuario'}, 400
+
+class VistaFiles(Resource):
+    @jwt_required()
+    def get(self, fileName):
+        # Retorna el archivo convertido
+        # Endpoint http://localhost:5000/api/files/fileName
+
+        current_user = get_jwt_identity()
+        user = User.query.get(current_user)
+        user_id = user.id
+
+        if db.session.query(File.query.filter(File.fileName.contains(fileName),
+            File.user == user_id).exists()).scalar():
+
+            task_consulta = File.query.filter(File.fileName.contains(fileName),
+            File.user == user_id).order_by(File.id.desc()).first()
+
+            #TODO: Cambiar a processed
+            # if task_consulta == 'uploaded':
+            #     try:
+            #         return send_file(task_consulta.pathDestino,
+            #         attachment_filename = str(task_consulta.pathDestino).split('/')[-1])
+            #     except Exception as e:
+            #         return str(e)
+            
+            # else:
+            #     try:
+            #         return send_file(task_consulta.pathOrigen,
+            #         attachment_filename = str(task_consulta.pathOrigen).split('/')[-1])
+            #     except Exception as e:
+            #         return str(e)
+        
+        else:
+            return {'mensaje':'El archivo no existe para el usuario'}, 400
+
+
+
+ 
+    
