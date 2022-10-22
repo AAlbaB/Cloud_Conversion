@@ -7,10 +7,18 @@ from flask_restful import Resource
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 from flask import request
 from ..modelos import db, User, UserSchema, File, FileSchema
+from werkzeug.utils import secure_filename
 
 celery_app = Celery(__name__, broker = 'redis://localhost:6379/0')
 user_schema = UserSchema()
 file_schema = FileSchema()
+
+#RUTA_CONVERTIDA = '../Backend/Files/convertido'
+#RUTA_ORIGINALES = '../Backend/Files/originales'
+
+RUTA_CONVERTIDA = '/home/andresalba/Escritorio/Cloud_Conversion/Backend/Files/convertido'
+RUTA_ORIGINALES = '/home/andresalba/Escritorio/Cloud_Conversion/Backend/Files/originales'
+FORMATOS = ["mp3", "ogg", "wav"]
 
 @celery_app.task(name = 'registrar_log')
 def registrar_log(*args):
@@ -19,6 +27,14 @@ def registrar_log(*args):
 @celery_app.task(name = 'convertir_audio')
 def convertir_audio(*args):
     pass
+
+def validate_password(password):
+    if 8 <= len(password) <= 24:
+        if re.search('[a-z]', password) and re.search('[A-Z]', password):
+            if re.search('[0-9]', password):
+                return True
+    
+    return False
 
 class VistaUsers(Resource):
 
@@ -41,14 +57,6 @@ class VistaUser(Resource):
         db.session.delete(user)
         db.session.commit()
         return 'Operacion Exitosa', 204
-
-def validate_password(password):
-    if 8 <= len(password) <= 24:
-        if re.search('[a-z]', password) and re.search('[A-Z]', password):
-            if re.search('[0-9]', password):
-                return True
-    
-    return False
 
 class VistaSignIn(Resource):
 
@@ -110,52 +118,77 @@ class VistaLogIn(Resource):
             except Exception as e:
                 return {'mensaje': 'A ocurrido un error, por favor vuelve a intentar'}, 503
 
-class VistaFilesUser(Resource):
-
-    @jwt_required()
-    def post(self, id_user):
-
-        origin_path = request.json['fileName']
-        new_format = request.json['newFormat']
-        new_path = 'convertido'
-        formatos = ["mp3", "ogg", "wav"]
-
-        if os.path.exists(origin_path):
-
-            old_path = origin_path.split("/")
-            len_split = len(old_path)
-            name_file = old_path[len_split - 1].split(".")[0]
-            origin_format = old_path[len_split - 1].split(".")[1]
-
-            if origin_format in formatos:
-
-                if new_format in formatos:
-
-                    new_file = File(fileName = (name_file + "." + origin_format), newFormat = new_format)
-                    user = User.query.get_or_404(id_user)
-                    user.files.append(new_file)
-                    db.session.commit()
-            
-                    dest_path = new_path + '/' + name_file + '.' + new_format
-                    args = (origin_path, dest_path, origin_format, new_format)
-                    convertir_audio.apply_async(args = args)
-
-                    new_file.status = "processed"
-                    db.session.commit()
-
-                    return file_schema.dump(new_file)
-                
-                else:
-                    return {'mensaje': 'El formato destino no es aceptado (mp3, ogg, wav)'}, 400
-
-            else:
-                return {'mensaje': 'El formato de origen no es aceptado (mp3, ogg, wav)'}, 400
-
-        else:
-            return {'mensaje': 'La ruta de origen no existe, por favor verificar'}, 400
-
 class VistaTasksUser(Resource):
 
+    @jwt_required()
+    def post(self):
+        # Crea una nueva tarea de conversion a un usario autenticado
+        # Endpoint http://localhost:5000/api/tasks
+
+        current_user = get_jwt_identity()
+        user = User.query.get(current_user)
+        user_id = user.id
+        user_name = user.username
+
+        if db.session.query(User.query.filter(User.id == user_id).exists()).scalar():
+
+            try:
+                file = request.files['fileName']
+            except:
+                return {'mensaje':'Error: Cargar archivo a convertir'}, 400
+
+            try:
+                new_format = request.form['newFormat']
+            except:
+                return {'mensaje':'Error: Definir extension de destino'}, 400
+
+            if (file is None) or (new_format is None): 
+                return {'mensaje':'Error: Revisar parametros de ingreso'}, 400
+
+            converter_file = secure_filename(file.filename)
+            old_format = converter_file.split('.')[-1].lower()
+            base_file = converter_file[:(len(converter_file) - len(old_format) - 1)]
+            new_format = new_format.lower()
+
+            if len(base_file) == 0: 
+                return {'mensaje':'Error: Nombre archivo sin base'}, 400
+            
+            if old_format not in FORMATOS:
+                return {'mensaje':'Error: Formato origen no valido (wav, ogg, mp3)'}, 400
+
+            if new_format not in FORMATOS:
+                return {'mensaje':'Error: Formato destino no valido (wav, ogg, mp3)'}, 400
+
+            date_actual = datetime.now()
+            date_actual = date_actual.strftime('%d%m%Y%H%M%S')
+
+            file_origen = f'{user_name}_{date_actual}_{converter_file}'.replace(' ','_')
+            path_origen = f'{RUTA_ORIGINALES}/{file_origen}'
+
+            file_destino = f'{user_name}_{date_actual}_{base_file}.{new_format}'.replace(' ','_')
+            path_destino = f'{RUTA_CONVERTIDA}/{file_destino}'
+
+            try:
+                file.save(path_origen)
+            except:
+                return {'mensaje':'Error: al almacenar archivo original'}
+
+            new_task = File(fileName = file_origen, 
+                            newFormat = new_format)
+
+            user = User.query.get_or_404(user_id)
+            user.files.append(new_task)
+            db.session.commit()
+
+            task_id = new_task.id
+            args = (path_origen, path_destino, old_format, new_format, file_origen, task_id)
+            convertir_audio.apply_async(args = args)
+
+            return file_schema.dump(new_task)
+
+        else:
+            return {'mensaje':'Erro: Autenticar usuario'}, 400
+        
     @jwt_required()
     def get(self):
         # Retorna todas las tareas de un usuario con parametros
@@ -183,7 +216,7 @@ class VistaTasksUser(Resource):
             count = 1
             lista = []
             for ta in tasks:
-                lista.append({'id': ta.id, 'timeStamp': (ta.timeStamp).strftime('%d/%m/%Y'),
+                lista.append({'id': ta.id, 'timeStamp': (ta.timeStamp).strftime('%d%m%Y%H%M%S'),
                         'fileName': ta.fileName, 'newFormat': ta.newFormat,
                         'status': ta.status})
 

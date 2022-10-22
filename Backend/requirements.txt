@@ -9,3 +9,4 @@ pydub==0.25.1
 SQLAlchemy==1.4.42
 marshmallow-sqlalchemy==0.28.1
 redis==4.3.4
+Werkzeug==2.0.2
