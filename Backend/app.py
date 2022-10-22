@@ -1,18 +1,19 @@
-from flaskr import create_app
+from api import create_app
+from flask_cors import CORS
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
 
-from .modelos import db, User, File
-from .modelos import FileSchema, UserSchema
-from .vistas import VistaUser, VistaUsers, VistaSignIn, VistaLogIn, \
+from api.modelos import db
+from api.vistas import VistaUser, VistaUsers, VistaSignIn, VistaLogIn, \
                     VistaFilesUser, VistaTask, VistaTasksUser
 
-app = create_app('default')
+app = create_app()
 app_context = app.app_context()
 app_context.push()
 
 db.init_app(app)
 db.create_all()
+cors = CORS(app)
 
 api = Api(app)
 api.add_resource(VistaUsers, '/users')
@@ -24,3 +25,6 @@ api.add_resource(VistaTask, '/api/tasks/<int:id_task>')
 api.add_resource(VistaTasksUser, '/api/tasks')
 
 jwt = JWTManager(app)
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0')
