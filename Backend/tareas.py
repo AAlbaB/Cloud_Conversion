@@ -7,7 +7,7 @@ import smtplib as smtp
 
 celery_app = Celery('__name__', broker = 'redis://localhost:6379/0')
 
-load_engine = create_engine('postgres://postgres:postgres@localhost:5432/nubecon')
+load_engine = create_engine('postgresql://postgres:postgres@localhost:5432/nubecon')
 Session = sessionmaker(bind = load_engine)
 session = Session()
 
