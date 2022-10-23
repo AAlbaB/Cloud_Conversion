@@ -7,10 +7,12 @@ db = SQLAlchemy()
   
 class File(db.Model):
     id = db.Column(db.Integer, primary_key = True)
-    timeStamp = db.Column(db.DateTime, default = datetime.now)
-    fileName = db.Column(db.String(256))
-    newFormat = db.Column(db.String(20))
+    timeStamp = db.Column(db.String(256), nullable = False)
+    fileName = db.Column(db.String(256), nullable = False)
+    newFormat = db.Column(db.String(3), nullable = False)
     status = db.Column(db.String(10), default = 'uploaded')
+    pathOriginal = db.Column(db.String(1024), nullable = False)
+    pathConvertido = db.Column(db.String(1024), nullable = False)
     user = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 class User(db.Model):

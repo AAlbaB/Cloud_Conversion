@@ -13,12 +13,9 @@ celery_app = Celery(__name__, broker = 'redis://localhost:6379/0')
 user_schema = UserSchema()
 file_schema = FileSchema()
 
-#RUTA_CONVERTIDA = '../Backend/Files/convertido'
-#RUTA_ORIGINALES = '../Backend/Files/originales'
-
 RUTA_CONVERTIDA = '/home/andresalba/Escritorio/Cloud_Conversion/Backend/Files/convertido'
 RUTA_ORIGINALES = '/home/andresalba/Escritorio/Cloud_Conversion/Backend/Files/originales'
-FORMATOS = ["mp3", "ogg", "wav"]
+FORMATOS = ['mp3', 'ogg', 'wav']
 
 @celery_app.task(name = 'registrar_log')
 def registrar_log(*args):
@@ -39,20 +36,35 @@ def validate_password(password):
 class VistaUsers(Resource):
 
     def get(self):
+        # Retorna todos los usuarios registrados
+        # Endpoint http://localhost:5000/users
+
         return [user_schema.dump(user) for user in User.query.all()]
 
 class VistaUser(Resource):
     
+    @jwt_required()
     def get(self, id_user):
+        # Retorna un usuario por su id
+        # Endpoint http://localhost:5000/users/id_user
+
         return user_schema.dump(User.query.get_or_404(id_user))
 
+    @jwt_required()
     def put(self, id_user):
+        # Actualiza la contraseña de un usuario por su id
+        # Endpoint http://localhost:5000/users/id_user
+
         user = User.query.get_or_404(id_user)
         user.password = request.json.get('password', user.password)
         db.session.commit()
         return user_schema.dump(user)
 
+    @jwt_required()
     def delete(self, id_user):
+        # Elimina un usuario por su id
+        # Endpoint http://localhost:5000/users/id_user
+
         user = User.query.get_or_404(id_user)
         db.session.delete(user)
         db.session.commit()
@@ -61,62 +73,65 @@ class VistaUser(Resource):
 class VistaSignIn(Resource):
 
     def post(self):
+        # Crea un usuario en la aplicacion
+        # Endpoint http://localhost:5000/auth/signup
 
         user_username = User.query.filter(User.username == request.json['username']).first()
         user_email = User.query.filter(User.email == request.json['email']).first()
+
+        #TODO: Encriptar contraseñas
         first_pass = request.json['password']
         second_pass = request.json['password_again']
 
-        if (user_username is None) and (user_email is None):
+        if user_username is not None:
+            return {'mensaje': 'Nombre de usuario ya existe, por favor iniciar sesión'}, 203
 
-            if first_pass == second_pass:
+        if user_email is not None:
+            return {'mensaje': 'Correo electronico ya existe, por favor iniciar sesión'}, 203
 
-                if validate_password(first_pass):
+        if first_pass != second_pass:
+            return {'mensaje': 'Contaseñas no coinciden, por favor vuelve a intentar'}, 401
 
-                    try:
-                        new_user = User(username = request.json['username'], 
-                                                password = request.json['password'], 
-                                                email =request.json['email'])
+        if validate_password(first_pass) == False:
+            return {'mensaje': 'Contaseñas debe contener minusculas, mayusculas y numeros'}, 400
+
+        try:
+            new_user = User(username = request.json['username'], 
+                            password = request.json['password'], 
+                            email =request.json['email'])
                         
-                        db.session.add(new_user)
-                        db.session.commit()
+            db.session.add(new_user)
+            db.session.commit()
 
-                        return {'mensaje': 'Usuario creado exitosamente', 
-                                'id': new_user.id, 'usuario': new_user.username, 
-                                'email': new_user.email}, 200
+            return {'mensaje': 'Usuario creado exitosamente', 
+                    'id': new_user.id, 'usuario': new_user.username, 
+                    'email': new_user.email}, 200
 
-                    except Exception as e:
-                        return {'mensaje': 'A ocurrido un error, por favor vuelve a intentar'}, 503
-                
-                else:
-                    return {'mensaje': 'Contaseñas debe contener minusculas, mayusculas y numeros'}, 400
-
-            else:
-                return {'mensaje': 'Contaseñas no coinciden, por favor vuelve a intentar'}, 401
-
-        else:
-            return {'mensaje': 'Usuario ya existe, por favor iniciar sesión'}, 203
-
+        except:
+                return {'mensaje': 'A ocurrido un error, por favor vuelve a intentar'}, 503
+                               
 class VistaLogIn(Resource):
 
     def post(self):
+        # Loguea un usuario en la aplicacion
+        # Endpoint http://localhost:5000/auth/login
 
-            try:
-                usuario = User.query.filter(User.username == request.json['username'],
-                                            User.password == request.json['password']).first()
+        try:
+            usuario = User.query.filter(User.username == request.json['username'],
+                                        User.password == request.json['password']).first()
 
-                if usuario:
-                    args = (request.json['username'], datetime.utcnow())
-                    registrar_log.apply_async(args = args)
-                    token_de_acceso = create_access_token(identity = usuario.id)
-                    return {'mensaje':'Inicio de sesión exitoso',
+            if usuario:
+                args = (request.json['username'], datetime.utcnow())
+                registrar_log.apply_async(args = args)
+                token_de_acceso = create_access_token(identity = usuario.id)
+                return {'mensaje':'Inicio de sesión exitoso',
                             'token': token_de_acceso}, 200
                             
-                else:
-                    return {'mensaje':'Nombre de usuario o contraseña incorrectos'}, 401
+            else:
+                return {'mensaje':'Nombre de usuario o contraseña incorrectos'}, 401
             
-            except Exception as e:
-                return {'mensaje': 'A ocurrido un error, por favor vuelve a intentar'}, 503
+        except:
+            return {'mensaje': 'A ocurrido un error, por favor vuelve a intentar'}, 503
 
 class VistaTasksUser(Resource):
 
@@ -173,8 +188,11 @@ class VistaTasksUser(Resource):
             except:
                 return {'mensaje':'Error: al almacenar archivo original'}
 
-            new_task = File(fileName = file_origen, 
-                            newFormat = new_format)
+            new_task = File(timeStamp = date_actual,
+                            fileName = file_origen, 
+                            newFormat = new_format,
+                            pathOriginal = path_origen,
+                            pathConvertido = path_destino)
 
             user = User.query.get_or_404(user_id)
             user.files.append(new_task)
@@ -183,6 +201,10 @@ class VistaTasksUser(Resource):
             task_id = new_task.id
             args = (path_origen, path_destino, old_format, new_format, file_origen, task_id)
             convertir_audio.apply_async(args = args)
+
+            #TODO: Quitar cuando se pueda actualizar desde la tarea
+            new_task.status = 'processed'
+            db.session.commit()
 
             return file_schema.dump(new_task)
 
@@ -216,7 +238,7 @@ class VistaTasksUser(Resource):
             count = 1
             lista = []
             for ta in tasks:
-                lista.append({'id': ta.id, 'timeStamp': (ta.timeStamp).strftime('%d%m%Y%H%M%S'),
+                lista.append({'id': ta.id, 'timeStamp': ta.timeStamp,
                         'fileName': ta.fileName, 'newFormat': ta.newFormat,
                         'status': ta.status})
 
@@ -246,7 +268,6 @@ class VistaTask(Resource):
 
         else:
             return {'mensaje':'La tarea no existe para el usuario'}, 400
-
 
     @jwt_required()
     def put(self, id_task):
@@ -284,24 +305,26 @@ class VistaTask(Resource):
             file_origen = put_task.fileName
 
             old_format = file_origen.split('.')[-1].lower()
-            base_file = file_origen[:(len(file_origen) - len(old_format) - 1)]
 
-            file_destino = f'{user_name}_{date_actual}_{base_file}.{new_format}'.replace(' ','_')
+            file_destino = f'{user_name}_{date_actual}.{new_format}'.replace(' ','_')
             path_destino = f'{RUTA_CONVERTIDA}/{file_destino}'
 
-            #if put_task.status == "processed":
-                #os.remove(put_task.path_destino)
+            try:
+                if put_task.status == 'processed':
+                    os.remove(put_task.pathConvertido)
 
-            put_task.newFormat = new_format
-            #put_task.path_destino = path_destino
-            put_task.status = 'uploaded'
-            db.session.commit()
+                put_task.newFormat = new_format
+                put_task.pathConvertido = path_destino
+                put_task.status = 'uploaded'
+                db.session.commit()
 
-            task_id = put_task.id
-            #args = (path_origen, path_destino, old_format, new_format, file_origen, task_id)
-            #convertir_audio.apply_async(args = args)
+                task_id = put_task.id
+                args = (put_task.pathOriginal, path_destino, old_format, new_format, file_origen, task_id)
+                convertir_audio.apply_async(args = args)
+                return {'mensaje':'La tarea fue actualizada para conversion'}, 200
 
-            return {'mensaje':'La tarea fue actualizada para convrsion'}, 200
+            except:
+                return {'mensaje':'Archivos no encontrados'}, 404
 
         else:
             return {'mensaje':'La tarea no existe para el usuario'}, 400
@@ -320,16 +343,18 @@ class VistaTask(Resource):
 
             task_delete = File.query.get(id_task)
 
-            #TODO: Implementar borrado de archivo origen
-            #os.remove(task_delete.origin_path)
+            try:
+                os.remove(task_delete.pathOriginal)
 
-            #TODO: Implmentar borrado si se convirtio
-            #if task_delete.status == 'processed':
-                #os.remove(task_delete.new_path)
+                if task_delete.status == 'processed':
+                    os.remove(task_delete.pathConvertido)
 
-            db.session.delete(task_delete)
-            db.session.commit()
-            return {'mensaje': 'Tarea eliminiada correctamente'}, 200
+                db.session.delete(task_delete)
+                db.session.commit()
+                return {'mensaje': 'Tarea eliminada correctamente'}, 200
+
+            except:
+                return {'mensaje':'Archivos no encontrados'}, 404
 
         else:
             return {'mensaje':'La tarea no existe para el usuario'}, 400
@@ -351,19 +376,17 @@ class VistaFiles(Resource):
             File.user == user_id).order_by(File.id.desc()).first()
 
             #TODO: Cambiar a processed
-            # if task_consulta == 'uploaded':
-            #     try:
-            #         return send_file(task_consulta.pathDestino,
-            #         attachment_filename = str(task_consulta.pathDestino).split('/')[-1])
-            #     except Exception as e:
-            #         return str(e)
+            if task_consulta.status == 'processed':
+                try:
+                    return send_file(task_consulta.pathConvertido)
+                except Exception as e:
+                    return str(e)
             
-            # else:
-            #     try:
-            #         return send_file(task_consulta.pathOrigen,
-            #         attachment_filename = str(task_consulta.pathOrigen).split('/')[-1])
-            #     except Exception as e:
-            #         return str(e)
+            else:
+                try:
+                    return send_file(task_consulta.pathOriginal)
+                except Exception as e:
+                    return str(e)
         
         else:
             return {'mensaje':'El archivo no existe para el usuario'}, 400
