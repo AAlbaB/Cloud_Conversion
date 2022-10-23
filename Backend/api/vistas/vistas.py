@@ -8,7 +8,7 @@ from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_requir
 from flask import request, send_file
 from ..modelos import db, User, UserSchema, File, FileSchema
 from werkzeug.utils import secure_filename
-from ..tareas import registrar_log, convert_music
+from tareas import registrar_log, convert_music
 
 user_schema = UserSchema()
 file_schema = FileSchema()
@@ -191,12 +191,7 @@ class VistaTasksUser(Resource):
             db.session.commit()
 
             task_id = new_task.id
-            #args = (path_origen, path_destino, old_format, new_format, file_origen, task_id)
             convert_music.delay(path_origen, path_destino, old_format, new_format, file_origen, task_id)
-
-            #TODO: Quitar cuando se pueda actualizar desde la tarea
-            new_task.status = 'processed'
-            db.session.commit()
 
             return file_schema.dump(new_task)
 
@@ -367,7 +362,6 @@ class VistaFiles(Resource):
             task_consulta = File.query.filter(File.fileName.contains(fileName),
             File.user == user_id).order_by(File.id.desc()).first()
 
-            #TODO: Cambiar a processed
             if task_consulta.status == 'processed':
                 try:
                     return send_file(task_consulta.pathConvertido)

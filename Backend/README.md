@@ -19,5 +19,7 @@ Para el correcto funcionamiento del programa, se debe crear un ambiente virtual 
 6. Validar que redis este en ejecucion (salir con Q): `sudo systemctl status redis`
 
 ### Correr programa:
-1. En una consola desde la carpeta Backend: `celery -A api.tareas.tareas worker -l info`
-2. En otra consola: `cd Backend` y `flask run` (Verificar que el entorno virtual este activado)
+Importante: Verificar que el entorno virtual este activado
+1. En una consola desde la carpeta Backend: `celery -A tareas worker -l info`
+2. En caso de que no funcione celery, se debe tener otra consola corriendo redis: `redis-server`
+2. En una consola desde la carpeta Backend: `flask run` 

@@ -3,9 +3,7 @@ venv/
 env/
 
 #Bases de datos
-instance/
 *.db
-tareas/original/
 *.mp3
 *.wav
 *.ogg
