@@ -1,18 +1,22 @@
 from celery import Celery
 from pydub import AudioSegment
-#from ..modelos import File
+#from ..modelos import File, FileSchema, db
+
+#file_schema = FileSchema()
 
 celery_app = Celery('__name__', broker = 'redis://localhost:6379/0')
 
-@celery_app.task(name = 'registrar_log')
+@celery_app.task()
 def registrar_log(usuario, fecha):
     with open('log_signin.txt', 'a+') as file:
         file.write('{} - inicio de sesion: {}\n'.format(usuario, fecha))
 
-@celery_app.task(name = 'convertir_audio')
+@celery_app.task()
 def convert_music(origin_path, dest_path, origin_format, new_format, name_file, task_id):
 
-    #new_task = File.query.get(task_id) 
+    #new_task = file_schema.dump(File.query.get_or_404(task_id))
+    #new_task = File.query.get_or_404(task_id)
+    #print(new_task)
 
     if origin_format == "mp3":
         sound = AudioSegment.from_mp3(origin_path)

@@ -1,29 +1,21 @@
+from lib2to3.pytree import convert
 import re
 import os
 from sqlalchemy import desc
 from datetime import datetime
-from celery import Celery
 from flask_restful import Resource
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 from flask import request, send_file
 from ..modelos import db, User, UserSchema, File, FileSchema
 from werkzeug.utils import secure_filename
+from ..tareas import registrar_log, convert_music
 
-celery_app = Celery(__name__, broker = 'redis://localhost:6379/0')
 user_schema = UserSchema()
 file_schema = FileSchema()
 
-RUTA_CONVERTIDA = '/home/andresalba/Escritorio/Cloud_Conversion/Backend/Files/convertido'
-RUTA_ORIGINALES = '/home/andresalba/Escritorio/Cloud_Conversion/Backend/Files/originales'
+RUTA_CONVERTIDA = '/home/miso/Cloud_Conversion/Backend/Files/convertido'
+RUTA_ORIGINALES = '/home/miso/Cloud_Conversion/Backend/Files/originales'
 FORMATOS = ['mp3', 'ogg', 'wav']
-
-@celery_app.task(name = 'registrar_log')
-def registrar_log(*args):
-    pass
-
-@celery_app.task(name = 'convertir_audio')
-def convertir_audio(*args):
-    pass
 
 def validate_password(password):
     if 8 <= len(password) <= 24:
@@ -121,8 +113,8 @@ class VistaLogIn(Resource):
                                         User.password == request.json['password']).first()
 
             if usuario:
-                args = (request.json['username'], datetime.utcnow())
-                registrar_log.apply_async(args = args)
+                #args = (request.json['username'], datetime.utcnow())
+                registrar_log.delay(request.json['username'], datetime.utcnow())
                 token_de_acceso = create_access_token(identity = usuario.id)
                 return {'mensaje':'Inicio de sesión exitoso',
                             'token': token_de_acceso}, 200
@@ -199,8 +191,8 @@ class VistaTasksUser(Resource):
             db.session.commit()
 
             task_id = new_task.id
-            args = (path_origen, path_destino, old_format, new_format, file_origen, task_id)
-            convertir_audio.apply_async(args = args)
+            #args = (path_origen, path_destino, old_format, new_format, file_origen, task_id)
+            convert_music.delay(path_origen, path_destino, old_format, new_format, file_origen, task_id)
 
             #TODO: Quitar cuando se pueda actualizar desde la tarea
             new_task.status = 'processed'
@@ -319,8 +311,8 @@ class VistaTask(Resource):
                 db.session.commit()
 
                 task_id = put_task.id
-                args = (put_task.pathOriginal, path_destino, old_format, new_format, file_origen, task_id)
-                convertir_audio.apply_async(args = args)
+                convert_music.delay(put_task.pathOriginal, path_destino, old_format, new_format, file_origen, task_id)
+
                 return {'mensaje':'La tarea fue actualizada para conversion'}, 200
 
             except:
