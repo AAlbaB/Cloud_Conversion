@@ -1,7 +1,7 @@
 ## Despliegue Maquina Virtual:
 Se deben realizar los siguientes pasos para el despliegue de la maquina virtual
 
-1. Descargue la VM desde  el siguiente link: 
+1. Descargue la VM desde  el siguiente link: [Maquina Virtual](https://uniandes.sharepoint.com/:u:/s/EquipodeestudioMISO/EfASTO5VwCxHln0rYOpQkW4BEHy7b15iDFrGnx0Pw_F6oA?e=T3pI9I)  
 2. Importe la VM en VirtualBox  `Version VirtualBox 7.0`
 3. ingrese las credenciales de la VM  `Username:miso  | Password:miso123`
 4. Digite en la consola de linux el siguiente comando: `tmux`
