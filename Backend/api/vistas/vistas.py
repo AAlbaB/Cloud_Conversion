@@ -1,5 +1,3 @@
-from lib2to3.pytree import convert
-import re
 import os
 from sqlalchemy import desc
 from datetime import datetime
@@ -9,27 +7,20 @@ from flask import request, send_file
 from ..modelos import db, User, UserSchema, File, FileSchema
 from werkzeug.utils import secure_filename
 from tareas import registrar_log, convert_music
+from ..utils import validate_password
 
 user_schema = UserSchema()
 file_schema = FileSchema()
 
-RUTA_CONVERTIDA = '/home/miso/Cloud_Conversion/Backend/Files/convertido'
-RUTA_ORIGINALES = '/home/miso/Cloud_Conversion/Backend/Files/originales'
+RUTA_CONVERTIDA = os.getcwd() + '/files/convertido' 
+RUTA_ORIGINALES = os.getcwd() + '/files/originales'
 FORMATOS = ['mp3', 'ogg', 'wav']
-
-def validate_password(password):
-    if 8 <= len(password) <= 24:
-        if re.search('[a-z]', password) and re.search('[A-Z]', password):
-            if re.search('[0-9]', password):
-                return True
-    
-    return False
 
 class VistaUsers(Resource):
 
     def get(self):
         # Retorna todos los usuarios registrados
-        # Endpoint http://localhost:5000/users
+        # Endpoint http://localhost:5000/api/users
 
         return [user_schema.dump(user) for user in User.query.all()]
 
@@ -38,14 +29,14 @@ class VistaUser(Resource):
     @jwt_required()
     def get(self, id_user):
         # Retorna un usuario por su id
-        # Endpoint http://localhost:5000/users/id_user
+        # Endpoint http://localhost:5000/api/users/id_user
 
         return user_schema.dump(User.query.get_or_404(id_user))
 
     @jwt_required()
     def put(self, id_user):
         # Actualiza la contraseña de un usuario por su id
-        # Endpoint http://localhost:5000/users/id_user
+        # Endpoint http://localhost:5000/api/users/id_user
 
         user = User.query.get_or_404(id_user)
         user.password = request.json.get('password', user.password)
@@ -55,18 +46,18 @@ class VistaUser(Resource):
     @jwt_required()
     def delete(self, id_user):
         # Elimina un usuario por su id
-        # Endpoint http://localhost:5000/users/id_user
+        # Endpoint http://localhost:5000/api/users/id_user
 
         user = User.query.get_or_404(id_user)
         db.session.delete(user)
         db.session.commit()
         return 'Operacion Exitosa', 204
 
-class VistaSignIn(Resource):
+class VistaSignUp(Resource):
 
     def post(self):
         # Crea un usuario en la aplicacion
-        # Endpoint http://localhost:5000/auth/signup
+        # Endpoint http://localhost:5000/api/auth/signup
 
         user_username = User.query.filter(User.username == request.json['username']).first()
         user_email = User.query.filter(User.email == request.json['email']).first()
@@ -85,7 +76,7 @@ class VistaSignIn(Resource):
             return {'mensaje': 'Contaseñas no coinciden, por favor vuelve a intentar'}, 401
 
         if validate_password(first_pass) == False:
-            return {'mensaje': 'Contaseñas debe contener minusculas, mayusculas y numeros'}, 400
+            return {'mensaje': 'La contraseña debe tener entre 8 y 24 caracteres, letras mayusculas, minisculas y numeros'}, 400
 
         try:
             new_user = User(username = request.json['username'], 
@@ -113,11 +104,9 @@ class VistaLogIn(Resource):
                                         User.password == request.json['password']).first()
 
             if usuario:
-                #args = (request.json['username'], datetime.utcnow())
                 registrar_log.delay(request.json['username'], datetime.utcnow())
                 token_de_acceso = create_access_token(identity = usuario.id)
-                return {'mensaje':'Inicio de sesión exitoso',
-                            'token': token_de_acceso}, 200
+                return {'mensaje':'Inicio de sesión exitoso', 'token': token_de_acceso}, 200
                             
             else:
                 return {'mensaje':'Nombre de usuario o contraseña incorrectos'}, 401
