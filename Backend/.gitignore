@@ -10,4 +10,4 @@ env/
 
 #Archvivos temporales
 *.pyc
-log_signin.txt
+log_login.txt

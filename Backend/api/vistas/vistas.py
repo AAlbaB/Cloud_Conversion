@@ -147,13 +147,16 @@ class VistaTasksUser(Resource):
             new_format = new_format.lower()
 
             if len(base_file) == 0: 
-                return {'mensaje':'Error: Nombre archivo sin base'}, 400
+                return {'mensaje':'Error: Debe subir un audio para convertir'}, 400
             
             if old_format not in FORMATOS:
                 return {'mensaje':'Error: Formato origen no valido (wav, ogg, mp3)'}, 400
 
             if new_format not in FORMATOS:
                 return {'mensaje':'Error: Formato destino no valido (wav, ogg, mp3)'}, 400
+
+            if new_format == old_format:
+                return {'mensaje':'Error: El audio convertir ya tiene la extension solicitada'}, 400
 
             date_actual = datetime.now()
             date_actual = date_actual.strftime('%d%m%Y%H%M%S')
@@ -274,15 +277,19 @@ class VistaTask(Resource):
             put_task = File.query.get(id_task)
 
             if new_format == put_task.newFormat:
-                return {'mensaje':'Ya se solicito el cambio a ese formato'}, 200
+                return {'mensaje':'Error: Ya se solicito el cambio a ese formato'}, 200
 
             date_actual = datetime.now()
             date_actual = date_actual.strftime('%d%m%Y%H%M%S')
             file_origen = put_task.fileName
 
             old_format = file_origen.split('.')[-1].lower()
+            name_origen = file_origen.split('.')[0].split('_')[-1]
 
-            file_destino = f'{user_name}_{date_actual}.{new_format}'.replace(' ','_')
+            if new_format == old_format:
+                return {'mensaje':'Error: El audio original ya tiene ese formato'}, 400
+
+            file_destino = f'{user_name}_{date_actual}_{name_origen}.{new_format}'.replace(' ','_')
             path_destino = f'{RUTA_CONVERTIDA}/{file_destino}'
 
             try:

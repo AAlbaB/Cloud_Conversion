@@ -11,3 +11,4 @@ marshmallow-sqlalchemy==0.28.1
 redis==4.3.4
 Werkzeug==2.0.2
 psycopg2-binary==2.9.4
+python-dotenv==0.21.0
