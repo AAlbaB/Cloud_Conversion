@@ -1,13 +1,16 @@
 import os
+from datetime import datetime
 from celery import Celery
 from pydub import AudioSegment
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
-from api.modelos import File, User
-from api.utils import send_email
+from api.modelos import File, User # TODO, desacoplar de modelos, hacer un modelo en tareas
+from api.utils import send_email  # TODO, crear los paara conversion de archivo
 
+#TODO: Configurar varibales en postman
 PATH_LOGIN = os.getcwd() + '/logs/log_login.txt'
+PATH_CONVERT = os.getcwd() + '/logs/log_convert.txt'
 
 load_dotenv()
 celery_app = Celery('__name__', broker = os.getenv('BROKER_URL'))
@@ -15,12 +18,12 @@ load_engine = create_engine(os.getenv('DATABASE_URL'))
 Session = sessionmaker(bind = load_engine)
 session = Session()
 
-@celery_app.task
+@celery_app.task(name = 'registrar_login')
 def registrar_log(usuario, fecha):
     with open(PATH_LOGIN, 'a+') as file:
         file.write('El usuario: {} - Inicio sesion: {}\n'.format(usuario, fecha))
 
-@celery_app.task
+@celery_app.task(name = 'convert_music')
 def convert_music(origin_path, dest_path, origin_format, new_format, name_file, task_id):
 
     new_task = session.query(File).get(task_id)
@@ -47,15 +50,23 @@ def convert_music(origin_path, dest_path, origin_format, new_format, name_file, 
         session.commit()
 
     else:
-        print ('NO se proporciono una extension valida {}'.format(name_file))
+        print ('No se proporciono una extension valida {}'.format(name_file))
 
+    registrar_conversion(task_id, '-> El audio {}, se convirtio a : {}'.format(name_file, new_format),  
+                            datetime.utcnow())
+                            
     try: 
         user = session.query(User).get(new_task.user)
         send_email(user.email, new_task.fileName, new_task.newFormat)
-        print('\n-> Se envio un email al usuario: {}'.format(user.username))
+        mensaje = '-> Se envio un email al usuario: {}'.format(user.username)
     except Exception as e:
-        print('\n-> A ocurrido un error en el envio del email')
+        mensaje = '-> A ocurrido un error en el envio del email'
 
+    registrar_conversion(task_id, mensaje, datetime.utcnow())
+
+def registrar_conversion(id_task, mensaje, fecha):
+    with open(PATH_CONVERT, 'a+') as file:
+        file.write('Para la tarea con Id: {}, Se registro: {} - Con fecha: {}\n'.format(id_task, mensaje, fecha))
 
 
 
