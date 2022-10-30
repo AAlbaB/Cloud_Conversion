@@ -1,35 +1,37 @@
-from lib2to3.pytree import convert
-import re
 import os
 from sqlalchemy import desc
 from datetime import datetime
+from celery import Celery
+from dotenv import load_dotenv
 from flask_restful import Resource
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 from flask import request, send_file
 from ..modelos import db, User, UserSchema, File, FileSchema
 from werkzeug.utils import secure_filename
-from tareas import registrar_log, convert_music
+from ..utils import validate_password
 
+load_dotenv()
+celery_app = Celery('__name__', broker = os.getenv('BROKER_URL'))
 user_schema = UserSchema()
 file_schema = FileSchema()
 
-RUTA_CONVERTIDA = '/home/miso/Cloud_Conversion/Backend/Files/convertido'
-RUTA_ORIGINALES = '/home/miso/Cloud_Conversion/Backend/Files/originales'
+RUTA_CONVERTIDA = os.getcwd() + '/files/convertido' 
+RUTA_ORIGINALES = os.getcwd() + '/files/originales'
 FORMATOS = ['mp3', 'ogg', 'wav']
 
-def validate_password(password):
-    if 8 <= len(password) <= 24:
-        if re.search('[a-z]', password) and re.search('[A-Z]', password):
-            if re.search('[0-9]', password):
-                return True
-    
-    return False
+@celery_app.task(name = 'registrar_login')
+def registrar_log(*args):
+    pass
+
+@celery_app.task(name = 'convert_music')
+def convert_music(*args):
+    pass
 
 class VistaUsers(Resource):
 
     def get(self):
         # Retorna todos los usuarios registrados
-        # Endpoint http://localhost:5000/users
+        # Endpoint http://localhost:5000/api/users
 
         return [user_schema.dump(user) for user in User.query.all()]
 
@@ -38,14 +40,14 @@ class VistaUser(Resource):
     @jwt_required()
     def get(self, id_user):
         # Retorna un usuario por su id
-        # Endpoint http://localhost:5000/users/id_user
+        # Endpoint http://localhost:5000/api/users/id_user
 
         return user_schema.dump(User.query.get_or_404(id_user))
 
     @jwt_required()
     def put(self, id_user):
         # Actualiza la contraseña de un usuario por su id
-        # Endpoint http://localhost:5000/users/id_user
+        # Endpoint http://localhost:5000/api/users/id_user
 
         user = User.query.get_or_404(id_user)
         user.password = request.json.get('password', user.password)
@@ -55,18 +57,18 @@ class VistaUser(Resource):
     @jwt_required()
     def delete(self, id_user):
         # Elimina un usuario por su id
-        # Endpoint http://localhost:5000/users/id_user
+        # Endpoint http://localhost:5000/api/users/id_user
 
         user = User.query.get_or_404(id_user)
         db.session.delete(user)
         db.session.commit()
         return 'Operacion Exitosa', 204
 
-class VistaSignIn(Resource):
+class VistaSignUp(Resource):
 
     def post(self):
         # Crea un usuario en la aplicacion
-        # Endpoint http://localhost:5000/auth/signup
+        # Endpoint http://localhost:5000/api/auth/signup
 
         user_username = User.query.filter(User.username == request.json['username']).first()
         user_email = User.query.filter(User.email == request.json['email']).first()
@@ -85,7 +87,7 @@ class VistaSignIn(Resource):
             return {'mensaje': 'Contaseñas no coinciden, por favor vuelve a intentar'}, 401
 
         if validate_password(first_pass) == False:
-            return {'mensaje': 'Contaseñas debe contener minusculas, mayusculas y numeros'}, 400
+            return {'mensaje': 'La contraseña debe tener entre 8 y 24 caracteres, letras mayusculas, minisculas y numeros'}, 400
 
         try:
             new_user = User(username = request.json['username'], 
@@ -106,18 +108,17 @@ class VistaLogIn(Resource):
 
     def post(self):
         # Loguea un usuario en la aplicacion
-        # Endpoint http://localhost:5000/auth/login
+        # Endpoint http://localhost:5000/api/auth/login
 
         try:
             usuario = User.query.filter(User.username == request.json['username'],
                                         User.password == request.json['password']).first()
 
             if usuario:
-                #args = (request.json['username'], datetime.utcnow())
-                registrar_log.delay(request.json['username'], datetime.utcnow())
+                args = (request.json['username'], datetime.utcnow())
+                registrar_log.apply_async(args = args)
                 token_de_acceso = create_access_token(identity = usuario.id)
-                return {'mensaje':'Inicio de sesión exitoso',
-                            'token': token_de_acceso}, 200
+                return {'mensaje':'Inicio de sesión exitoso', 'token': token_de_acceso}, 200
                             
             else:
                 return {'mensaje':'Nombre de usuario o contraseña incorrectos'}, 401
@@ -158,13 +159,16 @@ class VistaTasksUser(Resource):
             new_format = new_format.lower()
 
             if len(base_file) == 0: 
-                return {'mensaje':'Error: Nombre archivo sin base'}, 400
+                return {'mensaje':'Error: Debe subir un audio para convertir'}, 400
             
             if old_format not in FORMATOS:
                 return {'mensaje':'Error: Formato origen no valido (wav, ogg, mp3)'}, 400
 
             if new_format not in FORMATOS:
                 return {'mensaje':'Error: Formato destino no valido (wav, ogg, mp3)'}, 400
+
+            if new_format == old_format:
+                return {'mensaje':'Error: El audio convertir ya tiene la extension solicitada'}, 400
 
             date_actual = datetime.now()
             date_actual = date_actual.strftime('%d%m%Y%H%M%S')
@@ -191,7 +195,8 @@ class VistaTasksUser(Resource):
             db.session.commit()
 
             task_id = new_task.id
-            convert_music.delay(path_origen, path_destino, old_format, new_format, file_origen, task_id)
+            args = (path_origen, path_destino, old_format, new_format, file_origen, task_id)
+            convert_music.apply_async(args = args)
 
             return file_schema.dump(new_task)
 
@@ -285,15 +290,19 @@ class VistaTask(Resource):
             put_task = File.query.get(id_task)
 
             if new_format == put_task.newFormat:
-                return {'mensaje':'Ya se solicito el cambio a ese formato'}, 200
+                return {'mensaje':'Error: Ya se solicito el cambio a ese formato'}, 200
 
             date_actual = datetime.now()
             date_actual = date_actual.strftime('%d%m%Y%H%M%S')
             file_origen = put_task.fileName
 
             old_format = file_origen.split('.')[-1].lower()
+            name_origen = file_origen.split('.')[0].split('_')[-1]
 
-            file_destino = f'{user_name}_{date_actual}.{new_format}'.replace(' ','_')
+            if new_format == old_format:
+                return {'mensaje':'Error: El audio original ya tiene ese formato'}, 400
+
+            file_destino = f'{user_name}_{date_actual}_{name_origen}.{new_format}'.replace(' ','_')
             path_destino = f'{RUTA_CONVERTIDA}/{file_destino}'
 
             try:
@@ -306,7 +315,8 @@ class VistaTask(Resource):
                 db.session.commit()
 
                 task_id = put_task.id
-                convert_music.delay(put_task.pathOriginal, path_destino, old_format, new_format, file_origen, task_id)
+                args = (put_task.pathOriginal, path_destino, old_format, new_format, file_origen, task_id)
+                convert_music.apply_async(args = args)
 
                 return {'mensaje':'La tarea fue actualizada para conversion'}, 200
 
