@@ -12,7 +12,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"username\": \"UsuarioPrueba\",\n    \"password\": \"PASSbuena1234\",\n    \"password_again\": \"PASSbuena1234\",\n    \"email\": \"andresalbab13@gmail.com\"\n}",
+					"raw": "{\n    \"username\": \"NewUser\",\n    \"password\": \"PASSbuena1234\",\n    \"password_again\": \"PASSbuena1234\",\n    \"email\": \"andresalbab13@gmail.com\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -20,12 +20,12 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:5000/auth/signup",
+					"raw": "{{base_url}}/api/auth/signup",
 					"host": [
-						"localhost"
+						"{{base_url}}"
 					],
-					"port": "5000",
 					"path": [
+						"api",
 						"auth",
 						"signup"
 					]
@@ -41,7 +41,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"username\": \"UsuarioPrueba\",\n    \"password\": \"PASSbuena1234\"\n}",
+					"raw": "{\n    \"username\": \"NewUser\",\n    \"password\": \"PASSbuena1234\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -49,12 +49,12 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:5000/auth/login",
+					"raw": "{{base_url}}/api/auth/login",
 					"host": [
-						"localhost"
+						"{{base_url}}"
 					],
-					"port": "5000",
 					"path": [
+						"api",
 						"auth",
 						"login"
 					]
@@ -74,7 +74,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY2NjUzODY2NiwianRpIjoiYzU1MWRkZmEtMmY5MC00YjUyLWFhMmYtMTlhOWY4NDM5NWUwIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6MSwibmJmIjoxNjY2NTM4NjY2LCJleHAiOjE2NjY1Mzk1NjZ9.8Pu3XS-N5IdIvQdV_dPsIKsbSdEOJEM6ixjr454P9DA",
+							"value": "{{token}}",
 							"type": "string"
 						}
 					]
@@ -86,11 +86,10 @@
 					"formdata": []
 				},
 				"url": {
-					"raw": "localhost:5000/api/tasks?max=5&order=1",
+					"raw": "{{base_url}}/api/tasks?max=10&order=0",
 					"host": [
-						"localhost"
+						"{{base_url}}"
 					],
-					"port": "5000",
 					"path": [
 						"api",
 						"tasks"
@@ -98,11 +97,11 @@
 					"query": [
 						{
 							"key": "max",
-							"value": "5"
+							"value": "10"
 						},
 						{
 							"key": "order",
-							"value": "1"
+							"value": "0"
 						}
 					]
 				},
@@ -118,7 +117,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY2NjUzOTQyOCwianRpIjoiNTdkNmVmNmEtNjgxMi00ZGRhLTlhMzktYmMzODdhNTk0ODJkIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6MSwibmJmIjoxNjY2NTM5NDI4LCJleHAiOjE2NjY1NDAzMjh9.dfnmsWMENG6TDKvZcjhvJNvFeNPbV6fhctSpyB3L53w",
+							"value": "{{token}}",
 							"type": "string"
 						}
 					]
@@ -131,11 +130,11 @@
 						{
 							"key": "fileName",
 							"type": "file",
-							"src": "/home/andresalba/Escritorio/pato.mp3"
+							"src": "/home/andresalba/Escritorio/mario.mp3"
 						},
 						{
 							"key": "newFormat",
-							"value": "WAV",
+							"value": "wav",
 							"type": "default"
 						}
 					],
@@ -146,11 +145,10 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:5000/api/tasks",
+					"raw": "{{base_url}}/api/tasks",
 					"host": [
-						"localhost"
+						"{{base_url}}"
 					],
-					"port": "5000",
 					"path": [
 						"api",
 						"tasks"
@@ -168,7 +166,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY2NjUzODY2NiwianRpIjoiYzU1MWRkZmEtMmY5MC00YjUyLWFhMmYtMTlhOWY4NDM5NWUwIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6MSwibmJmIjoxNjY2NTM4NjY2LCJleHAiOjE2NjY1Mzk1NjZ9.8Pu3XS-N5IdIvQdV_dPsIKsbSdEOJEM6ixjr454P9DA",
+							"value": "{{token}}",
 							"type": "string"
 						}
 					]
@@ -176,11 +174,10 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:5000/api/tasks/1",
+					"raw": "{{base_url}}/api/tasks/1",
 					"host": [
-						"localhost"
+						"{{base_url}}"
 					],
-					"port": "5000",
 					"path": [
 						"api",
 						"tasks",
@@ -199,7 +196,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY2NjUzODY2NiwianRpIjoiYzU1MWRkZmEtMmY5MC00YjUyLWFhMmYtMTlhOWY4NDM5NWUwIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6MSwibmJmIjoxNjY2NTM4NjY2LCJleHAiOjE2NjY1Mzk1NjZ9.8Pu3XS-N5IdIvQdV_dPsIKsbSdEOJEM6ixjr454P9DA",
+							"value": "{{token}}",
 							"type": "string"
 						}
 					]
@@ -211,7 +208,7 @@
 					"formdata": [
 						{
 							"key": "newFormat",
-							"value": "ogg",
+							"value": "wav",
 							"type": "default"
 						}
 					],
@@ -222,11 +219,10 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:5000/api/tasks/1",
+					"raw": "{{base_url}}/api/tasks/1",
 					"host": [
-						"localhost"
+						"{{base_url}}"
 					],
-					"port": "5000",
 					"path": [
 						"api",
 						"tasks",
@@ -245,7 +241,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY2NjUzOTQyOCwianRpIjoiNTdkNmVmNmEtNjgxMi00ZGRhLTlhMzktYmMzODdhNTk0ODJkIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6MSwibmJmIjoxNjY2NTM5NDI4LCJleHAiOjE2NjY1NDAzMjh9.dfnmsWMENG6TDKvZcjhvJNvFeNPbV6fhctSpyB3L53w",
+							"value": "{{token}}",
 							"type": "string"
 						}
 					]
@@ -253,11 +249,10 @@
 				"method": "DELETE",
 				"header": [],
 				"url": {
-					"raw": "localhost:5000/api/tasks/1",
+					"raw": "{{base_url}}/api/tasks/1",
 					"host": [
-						"localhost"
+						"{{base_url}}"
 					],
-					"port": "5000",
 					"path": [
 						"api",
 						"tasks",
@@ -276,7 +271,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY2NjUzOTQyOCwianRpIjoiNTdkNmVmNmEtNjgxMi00ZGRhLTlhMzktYmMzODdhNTk0ODJkIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6MSwibmJmIjoxNjY2NTM5NDI4LCJleHAiOjE2NjY1NDAzMjh9.dfnmsWMENG6TDKvZcjhvJNvFeNPbV6fhctSpyB3L53w",
+							"value": "{{token}}",
 							"type": "string"
 						}
 					]
@@ -284,15 +279,14 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:5000/api/files/pato",
+					"raw": "{{base_url}}/api/files/iphone",
 					"host": [
-						"localhost"
+						"{{base_url}}"
 					],
-					"port": "5000",
 					"path": [
 						"api",
 						"files",
-						"pato"
+						"iphone"
 					]
 				},
 				"description": "Permite recuperar el archivo original o procesado"
