@@ -5,10 +5,9 @@ from pydub import AudioSegment
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
-from api.modelos import File, User # TODO, desacoplar de modelos, hacer un modelo en tareas
-from api.utils import send_email  # TODO, crear los paara conversion de archivo
+from api.modelos import File, User
+from api.utils import send_email
 
-#TODO: Configurar varibales en postman
 PATH_LOGIN = os.getcwd() + '/logs/log_login.txt'
 PATH_CONVERT = os.getcwd() + '/logs/log_convert.txt'
 
