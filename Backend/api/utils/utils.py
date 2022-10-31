@@ -10,8 +10,8 @@ def validate_password(password):
 
 def send_email(corre_usuario, name_file, new_format):
     connection = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-    email_addr = 'mailtotestandes@gmail.com'
-    email_passwd = 'turjcvgttwmpfjri'
+    email_addr = 'mailtotestandes1@gmail.com'
+    email_passwd = 'kkoeiouydimgfevl'
     subject = "Archivo convertido exitosamente"
     body = "Su archivo " + name_file +  " ha sido convertido a formato " + new_format
     message = 'Subject: {}\n\n{}'.format(subject, body)
