@@ -1,7 +1,7 @@
 import os
 from sqlalchemy import desc
 from datetime import datetime
-from celery import Celery
+f#rom celery import Celery
 from dotenv import load_dotenv
 from flask_restful import Resource
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
@@ -9,9 +9,10 @@ from flask import request, send_file
 from ..modelos import db, User, UserSchema, File, FileSchema
 from werkzeug.utils import secure_filename
 from ..utils import validate_password
+from tareas import registrar_log, convert_music
 
-load_dotenv()
-celery_app = Celery('__name__', broker = os.getenv('BROKER_URL'))
+#load_dotenv()
+#celery_app = Celery('__name__', broker = os.getenv('BROKER_URL'))
 user_schema = UserSchema()
 file_schema = FileSchema()
 
@@ -19,13 +20,13 @@ RUTA_CONVERTIDA = os.getcwd() + '/files/convertido'
 RUTA_ORIGINALES = os.getcwd() + '/files/originales'
 FORMATOS = ['mp3', 'ogg', 'wav']
 
-@celery_app.task(name = 'registrar_login')
-def registrar_log(*args):
-    pass
+#@celery_app.task(name = 'registrar_login')
+#def registrar_log(*args):
+    #pass
 
-@celery_app.task(name = 'convert_music')
-def convert_music(*args):
-    pass
+#@celery_app.task(name = 'convert_music')
+#def convert_music(*args):
+    #pass
 
 class VistaUsers(Resource):
 
@@ -115,8 +116,9 @@ class VistaLogIn(Resource):
                                         User.password == request.json['password']).first()
 
             if usuario:
-                args = (request.json['username'], datetime.utcnow())
-                registrar_log.apply_async(args = args)
+                #args = (request.json['username'], datetime.utcnow())
+                #registrar_log.apply_async(args = args)
+                registrar_log.delay(request.json['username'], datetime.utcnow())
                 token_de_acceso = create_access_token(identity = usuario.id)
                 return {'mensaje':'Inicio de sesión exitoso', 'token': token_de_acceso}, 200
                             
