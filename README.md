@@ -2,7 +2,7 @@
 Esta entrega del proyecto es el despliegue de la API en instancias de  GCP. El despliegue se realió con el servidor de aplicaciones gunicorn y nginx como servidor proxy.
 
 **Nota:**
-Las instrucciones de instalaciones y otros detalles se encuentran la Wiki, entrega 2.[Aqui](https://github.com/AAlbaB/Cloud_Conversion/wiki/Instalaci%C3%B3n--de-migraciones) 
+Las instrucciones de instalaciones y otros detalles se encuentran la Wiki, entrega 2 [Aqui](https://github.com/AAlbaB/Cloud_Conversion/wiki/Instalaci%C3%B3n--de-migraciones)<br>
 Se debe tener en cuenta que para el correcto funcionamiento del worker y web-server, se deben realizar las siguientes instalaciones en las máquinas virtuales.
 
 ## Instalaciones
