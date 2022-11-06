@@ -12,7 +12,7 @@ PATH_LOGIN = os.getcwd() + '/logs/log_login.txt'
 PATH_CONVERT = os.getcwd() + '/logs/log_convert.txt'
 
 load_dotenv()
-celery_app = Celery('__name__', broker = os.getenv('BROKER_URL'))
+celery_app = Celery('__name__', broker = os.getenv('BROKER_REDIS'))
 load_engine = create_engine(os.getenv('DATABASE_URL'))
 Session = sessionmaker(bind = load_engine)
 session = Session()

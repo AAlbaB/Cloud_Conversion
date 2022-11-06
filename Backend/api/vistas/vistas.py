@@ -12,7 +12,7 @@ from werkzeug.utils import secure_filename
 from ..utils import validate_password
 
 load_dotenv()
-celery_app = Celery('__name__', broker = os.getenv('BROKER_URL'))
+celery_app = Celery('__name__', broker = os.getenv('BROKER_REDIS'))
 user_schema = UserSchema()
 file_schema = FileSchema()
 
