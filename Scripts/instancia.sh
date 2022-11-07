@@ -1,136 +1,54 @@
 #!/usr/bin/bash
 # -*- coding: utf-8 -*-
 
-
-​# define las constantes usadas en el script
+# Define constantes usadas en el script
 user=`echo $USER`
-group="www-data"
-pro_name="Cloud_Conversion"
-proyecto="/home/$user/$pro_name"
-api="/home/$user/$pro_name/Backend"
+name_proyecto="Cloud_Conversion"
+path_proyecto="/home/$user/$name_proyecto"
+path_api="/home/$user/$name_proyecto/Backend"
 url="https://github.com/AAlbaB/Cloud_Conversion.git"
-api_service="app"
-port="80"
-ip=`ip addr | grep "inet " | grep "eth0" | cut -d ' ' -f 6 | cut -d '/' -f 1`
+ip=`ip a | grep "inet " | grep "inet 10" | cut -d ' ' -f 6 | cut -d '/' -f 1`
 
 # ----------------------------------------------------------------------------
 
 echo "Inicia la configuración instancia web "`date '+%Y%m%d%H%M%S'`
 
-# +++++++++++++++++++++++++++++++++++​
-
-# Preparar el sistema para la instalación de los servicios.
-# actualiza la lista de paquetes en el manejador de paquetes del 
-# sistema operativo​
+# Preparar el sistema para la instalación de los servicios de paquetes basicos
 
 apt-get update -y
-# instala los paquetes básicos
-apt-get install git python3-venv python3-pip python3-venv python3-flask -y 
-apt-get install nginx ffmpeg -y
-
-# +++++++++++++++++++++++++++++++++++​
-
-# establece las credenciales para S3 "POR HACER"
-mkdir -p /home/$user/.aws 
-echo -e "[default]
-aws_access_key_id = AKIA2VWXL5JUUTXUH57Q
-aws_secret_access_key = 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
-" > /home/$user/.aws/credentials
-
-echo -e "[default]
-output = json
-region = us-east-1
-" > /home/$user/.aws/config
-
-mkdir -p /root/.aws 
-echo -e "[default]
-aws_access_key_id = AKIA2VWXL5JUUTXUH57Q
-aws_secret_access_key = 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
-" > /root/.aws/credentials
-
-echo -e "[default]
-output = json
-region = us-east-1
-" > /root/.aws/config
-
-
-# aws s3 ls s3://bucket-grupo14
-
-# +++++++++++++++++++++++++++++++++++​
+apt-get install python3 python3-pip  python3-flask -y 
+apt-get install git ffmpeg ufw -y
 
 # Descarga del repositorio los archivos requeridos
+mkdir -p /home/$user
 cd /home/$user
 git clone $url
 
 # Verificar la existencia de la carpeta del proyecto.
-if [ ! -d $proyecto ]; 
+if [ ! -d $path_proyecto ]; 
 then
   # no existe el directorio del repositorio
   echo "Se presento un error en la descarga del repositorio"
   exit 1
 fi
 # Verifica que se haya descargado la carpeta principal del proyecto
-if [ ! -d $Api ];
+if [ ! -d $path_api ];
 then
-  echo "Se presento un error en la descarga del repositorio"
+  echo "No existe la API del proyecto"
   exit 2
 fi
 
-# actualiza el propietario del proyecto   "POR HACER"
-usermod $user -a -G $group
-chown -R $user:$group $proyecto
-chown -R $user:$group /home/$user/.aws
-chmod -R a+rw $proyecto
-
-# +++++++++++++++++++++++++++++++++++​
-
 # Ingresa al directorio donde estan el código de la aplicación
-cd $api
-# Instala el ambiente virtual
-python3 -m venv venv
-# Activa el ambiente virtual
-source venv/bin/activate
+cd $path_api
 # Instala los paquetes requeridos para el proyecto 
-pip install -r requirements.txt  
-deactivate
-# +++++++++++++++++++++++++++++++++++​
+pip install -r requirements.txt 
 
-# Crear el servicio de Gunicorn
-echo -e "
-[Unit]
-Description=Gunicorn instance to serve Gunicorn $api_service
-After=network.target
-[Service]
-User=$user
-Group=$group
-WorkingDirectory=$api
-Environment='PATH=$api/venv/bin'
-ExecStart=$api/venv/bin/gunicorn --workers 4 --bind unix:$api_service.sock -m 007 wsgi:app
-[Install]
-WantedBy=multi-user.target
-" > /etc/systemd/system/$api_service.service
+# Desplegamos la aplicación en ambiente de desarrollo
+export FLASK_APP=app.py
+export FLASK_DEBUG=1
+export FLASK_ENV=development
 
-# +++++++++++++++++++++++++++++++++++​
-
-# elimina el sitios por default habilitado en Nginx
-rm -f /etc/nginx/sites-enabled/default
-# crea el servicio de Nginx
-echo -e "
-server {
-    listen $port;
-    server_name $ip;
-    client_max_body_size 100M;
-    location / {
-        include proxy_params;
-        proxy_pass http://unix:$api/$api_service.sock;
-    }
-}" > /etc/nginx/sites-enabled/$api_service
-
-# +++++++++++++++++++++++++++++++++++​
-
-# Iniciar los servicios instalados.
-systemctl start app
-systemctl enable app
-systemctl restart nginx
-
-echo "Instalación terminada "`date '+%Y%m%d%H%M%S'`
+echo "Web server desplegado, para detener CTRL + C: "`date '+%Y%m%d%H%M%S'`
+# Habilitamos el puerto 5000 de la aplicación
+sudo ufw allow 5000
+gunicorn --bind 0.0.0.0:5000 wsgi:app
