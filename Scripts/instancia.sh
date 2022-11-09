@@ -3,10 +3,13 @@
 
 # Define constantes usadas en el script
 user=`echo $USER`
+group="www-data"
 name_proyecto="Cloud_Conversion"
 path_proyecto="/home/$user/$name_proyecto"
 path_api="/home/$user/$name_proyecto/Backend"
 url="https://github.com/AAlbaB/Cloud_Conversion.git"
+api_service="app"
+port="8080"
 ip=`ip a | grep "inet " | grep "inet 10" | cut -d ' ' -f 6 | cut -d '/' -f 1`
 
 # ----------------------------------------------------------------------------
@@ -16,8 +19,8 @@ echo "Inicia la configuración instancia web "`date '+%Y%m%d%H%M%S'`
 # Preparar el sistema para la instalación de los servicios de paquetes basicos
 
 apt-get update -y
-apt-get install python3 python3-pip  python3-flask -y 
-apt-get install git ffmpeg ufw -y
+apt-get install git python3-venv python3-pip python3-dev build-essential python3-flask -y 
+apt-get install libssl-dev libffi-dev python3-setuptools nginx ffmpeg -y
 
 # Descarga del repositorio los archivos requeridos
 mkdir -p /home/$user
@@ -40,15 +43,53 @@ fi
 
 # Ingresa al directorio donde estan el código de la aplicación
 cd $path_api
+
 # Instala los paquetes requeridos para el proyecto 
+python3 -m venv venv
+. venv/bin/activate
 pip install -r requirements.txt 
 
-# Desplegamos la aplicación en ambiente de desarrollo
+# Establecemos variables de entorno en la aplicación
 export FLASK_APP=app.py
 export FLASK_DEBUG=1
 export FLASK_ENV=development
 
-echo "Web server desplegado, para detener CTRL + C: "`date '+%Y%m%d%H%M%S'`
-# Habilitamos el puerto 5000 de la aplicación
-sudo ufw allow 5000
-gunicorn --bind 0.0.0.0:5000 wsgi:app
+deactivate
+
+# Crear el servicio de Gunicorn
+echo "
+[Unit]
+Description=Gunicorn instance to serve Gunicorn $api_service
+After=network.target
+
+[Service]
+User=$user
+Group=$group
+WorkingDirectory=$path_api
+Environment='PATH=$path_api/venv/bin'
+ExecStart=$path_api/venv/bin/gunicorn --workers 4 --bind unix:$api_service.sock -m 007 wsgi:app
+
+[Install]
+WantedBy=multi-user.target
+" > /etc/systemd/system/$api_service.service
+
+sudo systemctl start app
+sudo systemctl enable app
+
+# crea el servicio de Nginx
+echo "
+server {
+    listen $port;
+    server_name $ip;
+    client_max_body_size 100M;
+
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:$path_api/$api_service.sock;
+    }
+}" > /etc/nginx/sites-available/$api_service
+
+sudo ln -s /etc/nginx/sites-available/$api_service /etc/nginx/sites-enabled
+sudo systemctl restart nginx
+
+echo "Web server desplegado: "`date '+%Y%m%d%H%M%S'`
