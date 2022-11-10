@@ -1,5 +1,5 @@
-from cmath import e
 import os
+from google.cloud import storage
 from sqlalchemy import desc
 from datetime import datetime
 from celery import Celery
@@ -19,6 +19,9 @@ file_schema = FileSchema()
 RUTA_CONVERTIDA = os.getcwd() + '/files/convertido' 
 RUTA_ORIGINALES = os.getcwd() + '/files/originales'
 FORMATOS = ['mp3', 'ogg', 'wav']
+
+client = storage.Client(project = 'cloud-conversion-13822')
+bucket = client.get_bucket('misonube2')
 
 @celery_app.task(name = 'registrar_login')
 def registrar_log(*args):
@@ -182,27 +185,32 @@ class VistaTasksUser(Resource):
 
             try:
                 file.save(path_origen)
-            except:
-                return {'mensaje':'Error: al almacenar archivo original'}
+                blob = bucket.blob('originales/' + file_origen)
+                blob.upload_from_filename(path_origen)
+                urlfile = blob.public_url
+                os.remove(path_origen)
+
+            except Exception as e:
+                return {'mensaje':'Error: al almacenar archivo original', 'error': str(e)}
 
             new_task = File(timeStamp = date_actual,
                             fileName = file_origen, 
                             newFormat = new_format,
-                            pathOriginal = path_origen,
-                            pathConvertido = path_destino)
+                            pathOriginal = urlfile,
+                            pathConvertido = '')
 
             user = User.query.get_or_404(user_id)
             user.files.append(new_task)
             db.session.commit()
 
             task_id = new_task.id
-            args = (path_origen, path_destino, old_format, new_format, file_origen, task_id)
+            args = (path_destino, old_format, new_format, file_origen, file_destino, task_id)
             convert_music.apply_async(args = args)
 
             return file_schema.dump(new_task)
 
         else:
-            return {'mensaje':'Erro: Autenticar usuario'}, 400
+            return {'mensaje':'Error: Autenticar usuario'}, 400
         
     @jwt_required()
     def get(self):
@@ -308,15 +316,18 @@ class VistaTask(Resource):
 
             try:
                 if put_task.status == 'processed':
-                    os.remove(put_task.pathConvertido)
+                    conver_file = put_task.pathConvertido
+                    conver_file = conver_file.split('/')[-1]
+                    blob = bucket.blob('convertido/' + conver_file)
+                    blob.delete()
 
                 put_task.newFormat = new_format
-                put_task.pathConvertido = path_destino
+                put_task.pathConvertido = ''
                 put_task.status = 'uploaded'
                 db.session.commit()
 
                 task_id = put_task.id
-                args = (put_task.pathOriginal, path_destino, old_format, new_format, file_origen, task_id)
+                args = (path_destino, old_format, new_format, file_origen, file_destino, task_id)
                 convert_music.apply_async(args = args)
 
                 return {'mensaje':'La tarea fue actualizada para conversion'}, 200
@@ -342,10 +353,16 @@ class VistaTask(Resource):
             task_delete = File.query.get(id_task)
 
             try:
-                os.remove(task_delete.pathOriginal)
+                origin_file = task_delete.pathOriginal
+                origin_file = origin_file.split('/')[-1]
+                blob = bucket.blob('originales/' + origin_file)
+                blob.delete()
 
                 if task_delete.status == 'processed':
-                    os.remove(task_delete.pathConvertido)
+                    convert_file = task_delete.pathConvertido
+                    convert_file = convert_file.split('/')[-1]
+                    blob = bucket.blob('convertido/' + convert_file)
+                    blob.delete()
 
                 db.session.delete(task_delete)
                 db.session.commit()
@@ -375,15 +392,31 @@ class VistaFiles(Resource):
 
             if task_consulta.status == 'processed':
                 try:
-                    return send_file(task_consulta.pathConvertido)
+                    convert_file = task_consulta.pathConvertido
+                    convert_file = convert_file.split('/')[-1]
+                    blob = bucket.blob('convertido/' + convert_file)
+                    blob.download_to_filename(convert_file)
+                    convert_path = os.getcwd() + '/' + convert_file
+                    download_file = send_file(convert_path)
+                    os.remove(convert_path)
+
+                    return download_file
                 except Exception as e:
-                    return str(e)
+                    return {'mensaje':'Error: al descargar el archivo convertido', 'error': str(e)}        
             
             else:
                 try:
-                    return send_file(task_consulta.pathOriginal)
+                    origin_file = task_consulta.pathOriginal
+                    origin_file = origin_file.split('/')[-1]
+                    blob = bucket.blob('originales/' + origin_file)
+                    blob.download_to_filename(origin_file)
+                    origin_path = os.getcwd() + '/' + origin_file
+                    download_file = send_file(origin_path)
+                    os.remove(origin_path)
+
+                    return send_file(download_file)
                 except Exception as e:
-                    return str(e)
+                    return {'mensaje':'Error: al descargar el archivo original', 'error': str(e)}
         
         else:
             return {'mensaje':'El archivo no existe para el usuario'}, 400

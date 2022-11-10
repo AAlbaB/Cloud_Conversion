@@ -7,9 +7,14 @@ from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 from api.modelos import File, User
 from api.utils import send_email
+from google.cloud import storage
+
+client = storage.Client(project = 'cloud-conversion-13822')
+bucket = client.get_bucket('misonube2')
 
 PATH_LOGIN = os.getcwd() + '/logs/log_login.txt'
 PATH_CONVERT = os.getcwd() + '/logs/log_convert.txt'
+RUTA_ORIGINALES = os.getcwd()
 
 load_dotenv()
 celery_app = Celery('__name__', broker = os.getenv('BROKER_REDIS'))
@@ -23,36 +28,59 @@ def registrar_log(usuario, fecha):
         file.write('El usuario: {} - Inicio sesion: {}\n'.format(usuario, fecha))
 
 @celery_app.task(name = 'convert_music')
-def convert_music(origin_path, dest_path, origin_format, new_format, name_file, task_id):
+def convert_music(path_destino, old_format, new_format, file_origen, file_destino, task_id):
+    
+    try: 
+        blob = bucket.blob('originales/' + file_origen)
+        blob.download_to_filename(file_origen)
+        origin_path = RUTA_ORIGINALES + '/' + file_origen
+        new_task = session.query(File).get(task_id)
 
-    new_task = session.query(File).get(task_id)
+        if old_format == "mp3":
+            sound = AudioSegment.from_mp3(origin_path)
+            sound.export(path_destino, format = new_format)
+            print ('\n-> El audio {}, se convirtio a : {}'.format(file_origen, new_format))
+            new_task.status = 'processed'
+            session.commit()
 
-    if origin_format == "mp3":
-        sound = AudioSegment.from_mp3(origin_path)
-        sound.export(dest_path, format = new_format)
-        print ('\n-> El audio {}, se convirtio a : {}'.format(name_file, new_format))
-        new_task.status = 'processed'
+        elif old_format == "ogg":
+            sound = AudioSegment.from_ogg(origin_path)
+            sound.export(path_destino, format = new_format)
+            print ('\n-> El audio {}, se convirtio a : {}'.format(file_origen, new_format))
+            new_task.status = 'processed'
+            session.commit()
+
+        elif old_format == "wav":
+            sound = AudioSegment.from_wav(origin_path)
+            sound.export(path_destino, format = new_format)
+            print ('\n-> El audio {}, se convirtio a : {}'.format(file_origen, new_format))
+            new_task.status = 'processed'
+            session.commit()
+
+        else:
+            print ('No se proporciono una extension valida {}'.format(file_origen))
+        
+        mensaje = '-> El audio {}, se convirtio a : {}'.format(file_origen, new_format)
+
+    except Exception as e:
+            print ('\n-> A ocurrido un error convirtiendo el archivo ' + str(e))
+            mensaje = '-> A ocurrido un error convirtiendo el archivo ' + str(e)
+    
+    registrar_conversion(task_id, mensaje, datetime.utcnow())
+    
+    try:
+        os.remove(origin_path)
+        blob = bucket.blob('convertido/' + file_destino)
+        blob.upload_from_filename(path_destino)
+        urlfile = blob.public_url
+        new_task.pathConvertido = urlfile
         session.commit()
-
-    elif origin_format == "ogg":
-        sound = AudioSegment.from_ogg(origin_path)
-        sound.export(dest_path, format = new_format)
-        print ('\n-> El audio {}, se convirtio a : {}'.format(name_file, new_format))
-        new_task.status = 'processed'
-        session.commit()
-
-    elif origin_format == "wav":
-        sound = AudioSegment.from_wav(origin_path)
-        sound.export(dest_path, format = new_format)
-        print ('\n-> El audio {}, se convirtio a : {}'.format(name_file, new_format))
-        new_task.status = 'processed'
-        session.commit()
-
-    else:
-        print ('No se proporciono una extension valida {}'.format(name_file))
-
-    registrar_conversion(task_id, '-> El audio {}, se convirtio a : {}'.format(name_file, new_format),  
-                            datetime.utcnow())
+        os.remove(path_destino)
+        
+    except Exception as e:
+         mensaje = '-> A ocurrido un error subiendo el archivo convertido' + str(e)
+         
+    registrar_conversion(task_id, mensaje, datetime.utcnow())
                             
     try: 
         user = session.query(User).get(new_task.user)
