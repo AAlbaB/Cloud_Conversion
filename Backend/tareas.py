@@ -80,7 +80,8 @@ def convert_music(path_destino, old_format, new_format, file_origen, file_destin
         os.remove(converter_path)
         
     except Exception as e:
-         mensaje = '-> A ocurrido un error subiendo el archivo convertido' + str(e)
+        print ('-> A ocurrido un error subiendo el archivo convertido: ' + str(e))
+        mensaje = '-> A ocurrido un error subiendo el archivo convertido: ' + str(e)
          
     registrar_conversion(task_id, mensaje, datetime.utcnow())
                             

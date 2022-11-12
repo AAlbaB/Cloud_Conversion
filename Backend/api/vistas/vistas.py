@@ -12,7 +12,7 @@ from werkzeug.utils import secure_filename
 from ..utils import validate_password
 
 load_dotenv()
-client = storage.Client(project = os.getenv('utility-subset-367815'))
+client = storage.Client(project = os.getenv('PROYECT_STORAGE'))
 bucket = client.get_bucket(os.getenv('BUCKET'))
 celery_app = Celery('__name__', broker = os.getenv('BROKER_REDIS'))
 
