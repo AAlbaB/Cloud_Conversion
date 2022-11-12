@@ -10,8 +10,8 @@ from api.utils import send_email
 from google.cloud import storage
 
 load_dotenv()
-client = storage.Client(project = 'utility-subset-367815')
-bucket = client.get_bucket('misonube')
+client = storage.Client(project = os.getenv('utility-subset-367815'))
+bucket = client.get_bucket(os.getenv('BUCKET'))
 
 PATH_LOGIN = os.getcwd() + '/logs/log_login.txt'
 PATH_CONVERT = os.getcwd() + '/logs/log_convert.txt'
@@ -92,9 +92,11 @@ def convert_music(path_destino, old_format, new_format, file_origen, file_destin
     registrar_conversion(task_id, mensaje, datetime.utcnow())
 
 def registrar_conversion(id_task, mensaje, fecha):
-    with open(PATH_CONVERT, 'a+') as file:
-        file.write('Para la tarea con Id: {}, Se registro: {} - Con fecha: {}\n'.format(id_task, mensaje, fecha))
-
+    try: 
+        with open(PATH_CONVERT, 'a+') as file:
+            file.write('Para la tarea con Id: {}, Se registro: {} - Con fecha: {}\n'.format(id_task, mensaje, fecha))
+    except Exception as e:
+        print('A ocurrido un error al escribir logs: ' + str(e))
 
 
     
