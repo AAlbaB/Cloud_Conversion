@@ -10,7 +10,7 @@ from api.utils import send_email
 from google.cloud import storage
 
 load_dotenv()
-client = storage.Client(project = os.getenv('utility-subset-367815'))
+client = storage.Client(project = os.getenv('PROYECT_STORAGE'))
 bucket = client.get_bucket(os.getenv('BUCKET'))
 
 PATH_LOGIN = os.getcwd() + '/logs/log_login.txt'
