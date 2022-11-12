@@ -10,6 +10,7 @@ Se deben realizar las siguientes instalaciones para ejecutar el programa
 5. Instalar paquete de flask: `sudo apt-get install python3-flask`
 6. Servidor de redis: `sudo apt-get install redis-server` y `sudo systemctl enable redis-server.service`
 7. Paquete de audios: `sudo apt-get install ffmpeg`
+8. Instalar Git: `sudo apt install git`
 
 ## Ejecutar aplicacion
 Para el correcto funcionamiento del programa, se debe crear un ambiente virtual e instalar unos paquetes

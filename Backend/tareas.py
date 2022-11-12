@@ -85,14 +85,14 @@ def convert_music(path_destino, old_format, new_format, file_origen, file_destin
          
     registrar_conversion(task_id, mensaje, datetime.utcnow())
                             
-    try: 
-        user = session.query(User).get(new_task.user)
-        send_email(user.email, new_task.fileName, new_task.newFormat)
-        mensaje = '-> Se envio un email al usuario: {}'.format(user.username)
-    except Exception as e:
-        mensaje = '-> A ocurrido un error en el envio del email'
+    # try: 
+    #     user = session.query(User).get(new_task.user)
+    #     send_email(user.email, new_task.fileName, new_task.newFormat)
+    #     mensaje = '-> Se envio un email al usuario: {}'.format(user.username)
+    # except Exception as e:
+    #     mensaje = '-> A ocurrido un error en el envio del email'
 
-    registrar_conversion(task_id, mensaje, datetime.utcnow())
+    # registrar_conversion(task_id, mensaje, datetime.utcnow())
 
 def registrar_conversion(id_task, mensaje, fecha):
     try: 
