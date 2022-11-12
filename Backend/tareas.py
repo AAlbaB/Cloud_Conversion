@@ -10,8 +10,8 @@ from api.utils import send_email
 from google.cloud import storage
 
 load_dotenv()
-client = storage.Client(project = os.getenv('PROYECT_STORAGE'))
-bucket = client.get_bucket(os.getenv('BUCKET'))
+client = storage.Client(project = 'utility-subset-367815')
+bucket = client.get_bucket('misonube')
 
 PATH_LOGIN = os.getcwd() + '/logs/log_login.txt'
 PATH_CONVERT = os.getcwd() + '/logs/log_convert.txt'
