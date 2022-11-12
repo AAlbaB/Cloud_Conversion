@@ -204,7 +204,7 @@ class VistaTasksUser(Resource):
             db.session.commit()
 
             task_id = new_task.id
-            args = (path_destino, old_format, new_format, file_origen, file_destino, task_id)
+            args = (old_format, new_format, file_origen, file_destino, task_id)
             convert_music.apply_async(args = args)
 
             return file_schema.dump(new_task)

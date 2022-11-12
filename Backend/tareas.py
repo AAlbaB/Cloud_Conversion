@@ -15,6 +15,7 @@ bucket = client.get_bucket(os.getenv('BUCKET'))
 
 PATH_LOGIN = os.getcwd() + '/logs/log_login.txt'
 PATH_CONVERT = os.getcwd() + '/logs/log_convert.txt'
+RUTA_CONVERTIDA = os.getcwd() + '/files/convertido'
 RUTA_ORIGINALES = os.getcwd()
 
 celery_app = Celery('__name__', broker = os.getenv('BROKER_URL_LOCAL'))
@@ -28,31 +29,32 @@ def registrar_log(usuario, fecha):
         file.write('El usuario: {} - Inicio sesion: {}\n'.format(usuario, fecha))
 
 @celery_app.task(name = 'convert_music')
-def convert_music(path_destino, old_format, new_format, file_origen, file_destino, task_id):
+def convert_music(old_format, new_format, file_origen, file_destino, task_id):
     
     try: 
         blob = bucket.blob('originales/' + file_origen)
         blob.download_to_filename(file_origen)
         origin_path = RUTA_ORIGINALES + '/' + file_origen
+        converter_path = RUTA_CONVERTIDA + '/' + file_destino
         new_task = session.query(File).get(task_id)
 
         if old_format == "mp3":
             sound = AudioSegment.from_mp3(origin_path)
-            sound.export(path_destino, format = new_format)
+            sound.export(converter_path, format = new_format)
             print ('\n-> El audio {}, se convirtio a : {}'.format(file_origen, new_format))
             new_task.status = 'processed'
             session.commit()
 
         elif old_format == "ogg":
             sound = AudioSegment.from_ogg(origin_path)
-            sound.export(path_destino, format = new_format)
+            sound.export(converter_path, format = new_format)
             print ('\n-> El audio {}, se convirtio a : {}'.format(file_origen, new_format))
             new_task.status = 'processed'
             session.commit()
 
         elif old_format == "wav":
             sound = AudioSegment.from_wav(origin_path)
-            sound.export(path_destino, format = new_format)
+            sound.export(converter_path, format = new_format)
             print ('\n-> El audio {}, se convirtio a : {}'.format(file_origen, new_format))
             new_task.status = 'processed'
             session.commit()
