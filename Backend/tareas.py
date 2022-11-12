@@ -9,15 +9,15 @@ from api.modelos import File, User
 from api.utils import send_email
 from google.cloud import storage
 
-client = storage.Client(project = 'cloud-conversion-13822')
-bucket = client.get_bucket('misonube2')
+load_dotenv()
+client = storage.Client(project = os.getenv('PROYECT_STORAGE'))
+bucket = client.get_bucket(os.getenv('BUCKET'))
 
 PATH_LOGIN = os.getcwd() + '/logs/log_login.txt'
 PATH_CONVERT = os.getcwd() + '/logs/log_convert.txt'
 RUTA_ORIGINALES = os.getcwd()
 
-load_dotenv()
-celery_app = Celery('__name__', broker = os.getenv('BROKER_REDIS'))
+celery_app = Celery('__name__', broker = os.getenv('BROKER_URL_LOCAL'))
 load_engine = create_engine(os.getenv('DATABASE_URL'))
 Session = sessionmaker(bind = load_engine)
 session = Session()

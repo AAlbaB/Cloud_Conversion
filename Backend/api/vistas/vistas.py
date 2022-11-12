@@ -12,16 +12,16 @@ from werkzeug.utils import secure_filename
 from ..utils import validate_password
 
 load_dotenv()
+client = storage.Client(project = os.getenv('PROYECT_STORAGE'))
+bucket = client.get_bucket(os.getenv('BUCKET'))
 celery_app = Celery('__name__', broker = os.getenv('BROKER_REDIS'))
+
 user_schema = UserSchema()
 file_schema = FileSchema()
 
 RUTA_CONVERTIDA = os.getcwd() + '/files/convertido' 
 RUTA_ORIGINALES = os.getcwd() + '/files/originales'
 FORMATOS = ['mp3', 'ogg', 'wav']
-
-client = storage.Client(project = 'cloud-conversion-13822')
-bucket = client.get_bucket('misonube2')
 
 @celery_app.task(name = 'registrar_login')
 def registrar_log(*args):
