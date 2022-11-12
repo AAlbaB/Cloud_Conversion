@@ -29,7 +29,7 @@ def registrar_log(usuario, fecha):
         file.write('El usuario: {} - Inicio sesion: {}\n'.format(usuario, fecha))
 
 @celery_app.task(name = 'convert_music')
-def convert_music(old_format, new_format, file_origen, file_destino, task_id):
+def convert_music(path_destino, old_format, new_format, file_origen, file_destino, task_id):
     
     try: 
         blob = bucket.blob('originales/' + file_origen)
@@ -73,11 +73,11 @@ def convert_music(old_format, new_format, file_origen, file_destino, task_id):
     try:
         os.remove(origin_path)
         blob = bucket.blob('convertido/' + file_destino)
-        blob.upload_from_filename(path_destino)
+        blob.upload_from_filename(converter_path)
         urlfile = blob.public_url
         new_task.pathConvertido = urlfile
         session.commit()
-        os.remove(path_destino)
+        os.remove(converter_path)
         
     except Exception as e:
          mensaje = '-> A ocurrido un error subiendo el archivo convertido' + str(e)
