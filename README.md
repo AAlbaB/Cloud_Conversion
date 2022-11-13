@@ -2,7 +2,7 @@
 Esta entrega del proyecto, hace referencia a la entrega tres: DISEÑO E IMPLEMENTACIÓN DE UNA APLICACIÓN WEB ESCALABLE EN LA NUBE PÚBLICA – ESCALABILIDAD EN LA CAPA WEB.
 
 **Nota:**
-Las instrucciones de instalaciones y otros detalles se encuentran la Wiki, entrega 2 [Aqui](https://github.com/AAlbaB/Cloud_Conversion/wiki/Instalaci%C3%B3n-de-Autoescalado-Web-Server)<br>
+Las instrucciones de instalaciones y otros detalles se encuentran la Wiki, Entrega 3 [Aqui.](https://github.com/AAlbaB/Cloud_Conversion/wiki/Instalaci%C3%B3n-de-Autoescalado-Web-Server)<br>
 Se debe tener en cuenta que para el correcto funcionamiento del worker, se deben realizar las siguientes instalaciones en las máquinas virtuales.
 
 ## Instalaciones
