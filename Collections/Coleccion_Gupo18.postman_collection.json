@@ -1,8 +1,10 @@
 {
 	"info": {
-		"_postman_id": "af0b5225-0d4a-4c74-b15c-faa04489ed86",
+		"_postman_id": "76e4ea8a-530f-43dd-9a00-e04bf2f9596a",
 		"name": "Coleccion_Gupo18",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"description": "### API para la aplicación Cloud Conversion\n\n1. La API se puede utilizar en cualquier aplicación o manejador de APIs, se sugiere la utilización de POSTMAN.  \n    \n2. La API se encuentra desplegada en instancias de GCP, la cuales se pueden acceder mediante el balanceador de cargas: `http://IP_BALANCEADEAR`\n    \n\n### Comandos y Consultas desde la API\n\n1. Creación de un usuario: POST `/api/auth/signup`\n2. Ingreso de usuario: POST `/api/auth/login`\n3. Ver todas las tareas de un usuario: GET `/api/tasks`\n4. Crear una tarea de un usuario: POST `/api/tasks`\n5. Ver una tarea específica: GET `/api/tasks/`\n6. Actualizar una tarea específica: PUT `/api/tasks/`\n7. Eliminar una tarea específica: DELETE `/api/tasks/`\n8. Descargar un archivo GET `/api/files/`",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "20261140"
 	},
 	"item": [
 		{
@@ -12,7 +14,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"username\": \"NewUser\",\n    \"password\": \"PASSbuena1234\",\n    \"password_again\": \"PASSbuena1234\",\n    \"email\": \"andresalbab13@gmail.com\"\n}",
+					"raw": "{\n    \"username\": \"NewUser\",\n    \"password\": \"NewPass1478\",\n    \"password_again\": \"NewPass1478\",\n    \"email\": \"newUser01@gmail.com\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -32,7 +34,66 @@
 				},
 				"description": "Permite crear una cuenta de usuario, con los campos usuario, correo electrónico y contraseña. El usuario y el correo electrónico deben ser únicos en la plataforma, la contraseña debe seguir unos lineamientos mínimos de seguridad, además debe ser solicitada dos veces para que el usuario confirme que ingresa la contraseña correctamente."
 			},
-			"response": []
+			"response": [
+				{
+					"name": "Signup",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"NewUser\",\n    \"password\": \"NewPass1478\",\n    \"password_again\": \"NewPass1478\",\n    \"email\": \"newUser01@gmail.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/signup",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"signup"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Server",
+							"value": "nginx/1.18.0"
+						},
+						{
+							"key": "Date",
+							"value": "Sat, 12 Nov 2022 15:51:13 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Content-Length",
+							"value": "106"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"mensaje\": \"Usuario creado exitosamente\",\n    \"id\": 1,\n    \"usuario\": \"NewUser\",\n    \"email\": \"newUser01@gmail.com\"\n}"
+				}
+			]
 		},
 		{
 			"name": "Login",
@@ -41,7 +102,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"username\": \"NewUser\",\n    \"password\": \"PASSbuena1234\"\n}",
+					"raw": "{\n    \"username\": \"NewUser\",\n    \"password\": \"NewPass1478\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -61,7 +122,66 @@
 				},
 				"description": "Permite recuperar el token de autorización para consumir los recursos del API suministrando un nombre de usuario y una contraseña correcta de una cuenta registrada."
 			},
-			"response": []
+			"response": [
+				{
+					"name": "Login",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"NewUser\",\n    \"password\": \"NewPass1478\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Server",
+							"value": "nginx/1.18.0"
+						},
+						{
+							"key": "Date",
+							"value": "Sat, 12 Nov 2022 15:52:46 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Content-Length",
+							"value": "319"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"mensaje\": \"Inicio de sesión exitoso\",\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTY2ODI2ODM2NiwianRpIjoiZTg0NDM4ZDMtNmMzOC00YTk0LTk0MDktZDA2MzY2ODIzYWY3IiwidHlwZSI6ImFjY2VzcyIsInN1YiI6MSwibmJmIjoxNjY4MjY4MzY2LCJleHAiOjE2NjgyNjkyNjZ9.bOZOe-x8v-6vwCQAHae3nSTlDhhfE1E9LWZO3ovG0H0\"\n}"
+				}
+			]
 		},
 		{
 			"name": "Get TasksUser",
@@ -107,7 +227,70 @@
 				},
 				"description": "Permite recuperar todas las tareas de conversión de un usuario autorizado en la aplicación."
 			},
-			"response": []
+			"response": [
+				{
+					"name": "Get TasksUser",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{base_url}}/api/tasks?max=10&order=0",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"tasks"
+							],
+							"query": [
+								{
+									"key": "max",
+									"value": "10"
+								},
+								{
+									"key": "order",
+									"value": "0"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Server",
+							"value": "nginx/1.18.0"
+						},
+						{
+							"key": "Date",
+							"value": "Sat, 12 Nov 2022 19:21:36 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Content-Length",
+							"value": "1133"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						}
+					],
+					"cookie": [],
+					"body": "[\n    {\n        \"id\": 1,\n        \"timeStamp\": \"12112022174338\",\n        \"fileName\": \"NewUser_12112022174338_AudioPruebaOGG.ogg\",\n        \"newFormat\": \"wav\",\n        \"status\": \"uploaded\"\n    },\n    {\n        \"id\": 2,\n        \"timeStamp\": \"12112022175640\",\n        \"fileName\": \"NewUser_12112022175640_AudioPruebaOGG.ogg\",\n        \"newFormat\": \"wav\",\n        \"status\": \"uploaded\"\n    },\n    {\n        \"id\": 3,\n        \"timeStamp\": \"12112022184432\",\n        \"fileName\": \"NewUser_12112022184432_AudioPruebaMP3.mp3\",\n        \"newFormat\": \"wav\",\n        \"status\": \"uploaded\"\n    },\n    {\n        \"id\": 4,\n        \"timeStamp\": \"12112022185414\",\n        \"fileName\": \"NewUser_12112022185414_AudioPruebaMP3.mp3\",\n        \"newFormat\": \"wav\",\n        \"status\": \"uploaded\"\n    },\n    {\n        \"id\": 5,\n        \"timeStamp\": \"12112022185658\",\n        \"fileName\": \"NewUser_12112022185658_AudioPruebaMP3.mp3\",\n        \"newFormat\": \"wav\",\n        \"status\": \"processed\"\n    },\n    {\n        \"id\": 6,\n        \"timeStamp\": \"12112022190417\",\n        \"fileName\": \"NewUser_12112022190417_AudioPruebaMP3.mp3\",\n        \"newFormat\": \"wav\",\n        \"status\": \"processed\"\n    },\n    {\n        \"id\": 7,\n        \"timeStamp\": \"12112022191617\",\n        \"fileName\": \"NewUser_12112022191617_AudioPruebaMP3.mp3\",\n        \"newFormat\": \"wav\",\n        \"status\": \"processed\"\n    },\n    {\n        \"id\": 8,\n        \"timeStamp\": \"12112022191803\",\n        \"fileName\": \"NewUser_12112022191803_AudioPruebaWAV.wav\",\n        \"newFormat\": \"mp3\",\n        \"status\": \"processed\"\n    }\n]"
+				}
+			]
 		},
 		{
 			"name": "Post TasksUser",
@@ -130,19 +313,14 @@
 						{
 							"key": "fileName",
 							"type": "file",
-							"src": "/home/andresalba/Escritorio/mario.mp3"
+							"src": "/C:/Users/anosc/Desktop/Desarrollo de Software en la nube/AudioPruebaOGG.ogg"
 						},
 						{
 							"key": "newFormat",
-							"value": "wav",
+							"value": "mp3",
 							"type": "default"
 						}
-					],
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
+					]
 				},
 				"url": {
 					"raw": "{{base_url}}/api/tasks",
@@ -156,7 +334,71 @@
 				},
 				"description": "Los campos id, timeStamp, y status se generan de forma automática en la aplicación. El id es un campo único y auto-numérico. El timeStamp corresponde a la fecha y hora de carga del archivo. Finalmente, el status corresponde a la notificación en la aplicación si el archivo ya fue o no procesado. Para los archivos cargados su estado por defecto es uploaded, en el momento de realizar la conversión este campo pasa a processed."
 			},
-			"response": []
+			"response": [
+				{
+					"name": "Post TasksUser",
+					"originalRequest": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "fileName",
+									"type": "file",
+									"src": "/C:/Users/anosc/Desktop/Desarrollo de Software en la nube/AudioPruebaWAV.wav"
+								},
+								{
+									"key": "newFormat",
+									"value": "mp3",
+									"type": "default"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/tasks",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"tasks"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Server",
+							"value": "nginx/1.18.0"
+						},
+						{
+							"key": "Date",
+							"value": "Sat, 12 Nov 2022 19:18:03 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Content-Length",
+							"value": "151"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"timeStamp\": \"12112022191803\",\n    \"newFormat\": \"mp3\",\n    \"user\": 1,\n    \"status\": \"uploaded\",\n    \"fileName\": \"NewUser_12112022191803_AudioPruebaWAV.wav\",\n    \"id\": 8\n}"
+				}
+			]
 		},
 		{
 			"name": "Get Task",
@@ -174,19 +416,69 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{base_url}}/api/tasks/1",
+					"raw": "{{base_url}}/api/tasks/{{id_task}}",
 					"host": [
 						"{{base_url}}"
 					],
 					"path": [
 						"api",
 						"tasks",
-						"1"
+						"{{id_task}}"
 					]
 				},
-				"description": "Permite recuperar la información de una tarea en la aplicación. El usuario requiere autorización."
+				"description": "Permite recuperar la información de una tarea en la aplicación. El usuario requiere autorización.\n\nEn el campo {{id_task}} se debe colocar el id de la tarea a consultar."
 			},
-			"response": []
+			"response": [
+				{
+					"name": "Get Task",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/tasks/{{id_task}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								"{{id_task}}"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Server",
+							"value": "nginx/1.18.0"
+						},
+						{
+							"key": "Date",
+							"value": "Sat, 12 Nov 2022 19:22:12 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Content-Length",
+							"value": "152"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"timeStamp\": \"12112022191803\",\n    \"newFormat\": \"mp3\",\n    \"user\": 1,\n    \"status\": \"processed\",\n    \"fileName\": \"NewUser_12112022191803_AudioPruebaWAV.wav\",\n    \"id\": 8\n}"
+				}
+			]
 		},
 		{
 			"name": "Put Task",
@@ -208,30 +500,85 @@
 					"formdata": [
 						{
 							"key": "newFormat",
-							"value": "wav",
+							"value": "ogg",
 							"type": "default"
 						}
-					],
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
+					]
 				},
 				"url": {
-					"raw": "{{base_url}}/api/tasks/1",
+					"raw": "{{base_url}}/api/tasks/{{id_task}}",
 					"host": [
 						"{{base_url}}"
 					],
 					"path": [
 						"api",
 						"tasks",
-						"1"
+						"{{id_task}}"
 					]
 				},
-				"description": "Permite actualizar la información de una tarea en la aplicación, le facilita al usuario actualizar el formato de conversión de un archivo ya disponible en la aplicación. El usuario requiere autorización."
+				"description": "Permite actualizar la información de una tarea en la aplicación, le facilita al usuario actualizar el formato de conversión de un archivo ya disponible en la aplicación. El usuario requiere autorización.\n\nEn el campo {{id_task}} se debe colocar el id de la tarea a editar."
 			},
-			"response": []
+			"response": [
+				{
+					"name": "Put Task",
+					"originalRequest": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "newFormat",
+									"value": "ogg",
+									"type": "default"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/tasks/{{id_task}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								"{{id_task}}"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Server",
+							"value": "nginx/1.18.0"
+						},
+						{
+							"key": "Date",
+							"value": "Sat, 12 Nov 2022 19:23:17 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Content-Length",
+							"value": "56"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"mensaje\": \"La tarea fue actualizada para conversion\"\n}"
+				}
+			]
 		},
 		{
 			"name": "Delete Task",
@@ -249,19 +596,69 @@
 				"method": "DELETE",
 				"header": [],
 				"url": {
-					"raw": "{{base_url}}/api/tasks/1",
+					"raw": "{{base_url}}/api/tasks/{{id_task}}",
 					"host": [
 						"{{base_url}}"
 					],
 					"path": [
 						"api",
 						"tasks",
-						"1"
+						"{{id_task}}"
 					]
 				},
-				"description": "Permite eliminar una tarea en la aplicación. El usuario requiere autorización"
+				"description": "Permite eliminar una tarea en la aplicación. El usuario requiere autorización.\n\nEn el campo {{id_task}} se debe colocar el id de la tarea a consultar."
 			},
-			"response": []
+			"response": [
+				{
+					"name": "Delete Task",
+					"originalRequest": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/tasks/{{id_task}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								"{{id_task}}"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Server",
+							"value": "nginx/1.18.0"
+						},
+						{
+							"key": "Date",
+							"value": "Sat, 12 Nov 2022 19:24:47 GMT"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						},
+						{
+							"key": "Content-Length",
+							"value": "45"
+						},
+						{
+							"key": "Connection",
+							"value": "keep-alive"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"mensaje\": \"Tarea eliminada correctamente\"\n}"
+				}
+			]
 		},
 		{
 			"name": "Get File",
@@ -279,17 +676,17 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{base_url}}/api/files/iphone",
+					"raw": "{{base_url}}/api/files/{{name_file}}",
 					"host": [
 						"{{base_url}}"
 					],
 					"path": [
 						"api",
 						"files",
-						"iphone"
+						"{{name_file}}"
 					]
 				},
-				"description": "Permite recuperar el archivo original o procesado"
+				"description": "Permite recuperar el archivo original o procesado.\n\nEn el campo {{name_file}} se debe colocar el nombre del archivo a descargar."
 			},
 			"response": []
 		}
