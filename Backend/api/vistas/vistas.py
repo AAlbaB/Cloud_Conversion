@@ -1,5 +1,6 @@
 import os
 from google.cloud import storage
+from google.cloud import pubsub_v1
 from sqlalchemy import desc
 from datetime import datetime
 from celery import Celery
@@ -22,6 +23,9 @@ file_schema = FileSchema()
 RUTA_CONVERTIDA = os.getcwd() + '/files/convertido' 
 RUTA_ORIGINALES = os.getcwd() + '/files/originales'
 FORMATOS = ['mp3', 'ogg', 'wav']
+
+credentials_path = os.getcwd() + '/cloud-conversion-test.json'
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
 
 @celery_app.task(name = 'registrar_login')
 def registrar_log(*args):
