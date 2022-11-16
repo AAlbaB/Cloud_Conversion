@@ -8,10 +8,17 @@ from dotenv import load_dotenv
 from api.modelos import File, User
 from api.utils import send_email
 from google.cloud import storage
+from google.cloud import pubsub_v1
 
 load_dotenv()
 client = storage.Client(project = os.getenv('PROYECT_STORAGE'))
 bucket = client.get_bucket(os.getenv('BUCKET'))
+
+credentials_path = os.getcwd() + '/cloud-conversion-test.json'
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
+timeout = 5.0
+subscriber = pubsub_v1.SubscriberClient()
+subscription_path = 'projects/cloud-conversion-13822/subscriptions/register-login-sub'
 
 PATH_LOGIN = os.getcwd() + '/logs/log_login.txt'
 PATH_CONVERT = os.getcwd() + '/logs/log_convert.txt'
@@ -23,10 +30,13 @@ load_engine = create_engine(os.getenv('DATABASE_URL'))
 Session = sessionmaker(bind = load_engine)
 session = Session()
 
-@celery_app.task(name = 'registrar_login')
+#@celery_app.task(name = 'registrar_login')
 def registrar_log(usuario, fecha):
     with open(PATH_LOGIN, 'a+') as file:
         file.write('El usuario: {} - Inicio sesion: {}\n'.format(usuario, fecha))
+
+streaming_pull_future = subscriber.subscribe(subscription_path, registrar_log=registrar_log)
+print(f'Listening for messages on {subscription_path}')
 
 @celery_app.task(name = 'convert_music')
 def convert_music(path_destino, old_format, new_format, file_origen, file_destino, task_id):
@@ -101,6 +111,13 @@ def registrar_conversion(id_task, mensaje, fecha):
     except Exception as e:
         print('A ocurrido un error al escribir logs: ' + str(e))
 
+
+with subscriber:
+    try:
+        streaming_pull_future.result()
+    except TimeoutError:
+        streaming_pull_future.cancel()
+        streaming_pull_future.result()
 
     
 

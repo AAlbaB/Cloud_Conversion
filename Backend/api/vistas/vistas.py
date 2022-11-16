@@ -123,8 +123,11 @@ class VistaLogIn(Resource):
                                         User.password == request.json['password']).first()
 
             if usuario:
+                publisher = pubsub_v1.PublisherClient()
+                topic_path = 'projects/cloud-conversion-13822/topics/register-login'
                 args = (request.json['username'], datetime.utcnow())
-                registrar_log.apply_async(args = args)
+                #registrar_log.apply_async(args = args)
+                future = publisher.publish(topic_path, args)
                 token_de_acceso = create_access_token(identity = usuario.id)
                 return {'mensaje':'Inicio de sesión exitoso', 'token': token_de_acceso}, 200
                             
