@@ -31,11 +31,15 @@ Session = sessionmaker(bind = load_engine)
 session = Session()
 
 #@celery_app.task(name = 'registrar_login')
-def registrar_log(usuario, fecha):
+def registrar_log(message):
     with open(PATH_LOGIN, 'a+') as file:
-        file.write('El usuario: {} - Inicio sesion: {}\n'.format(usuario, fecha))
+        user = message.attributes.get('username')
+        date = message.attributes.get('date')
+        file.write('El usuario: {} - Inicio sesion: {}\n'.format(user, date))
+        print('Se leyo la tarea: {}'.format(message))
+    message.ack()
 
-streaming_pull_future = subscriber.subscribe(subscription_path, registrar_log=registrar_log)
+streaming_pull_future = subscriber.subscribe(subscription_path, callback=registrar_log)
 print(f'Listening for messages on {subscription_path}')
 
 @celery_app.task(name = 'convert_music')
