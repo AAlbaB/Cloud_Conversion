@@ -5,9 +5,10 @@ En esta serie de instrucciones, se podrá ejecutar la aplicación de forma local
 1. Crear cola de mensajes con el publicador y suscritor en la sección de GCP -"PUB/SUB"
 2. Crear una nueva cuenta de servicio para poder realizar las publicaciones, la sección de GCP "IAM", Service Accounts, Create Service Account
 3. Asignar un nombre, descripción y en la sección "Grant this service account access to project" buscar PUB/SUB y seleccionar el rol "PUB/SUB Admin"
-4. Por último, cuando se crea la nueva cuenta, ingresar a ella y en la sección de "Keys", añadir una nueba en formato JSON
-5. Esta Key se descarga automáticamente y es la que podemos usar de forma local para usar PUB/SUB
-6. Para más información revisar el video: [Set up & use PubSub with Python](https://www.youtube.com/watch?v=xOtrCmPjal8&ab_channel=D-I-Ry)
+4. Por último, cuando se crea la nueva cuenta, ingresar a ella y en la sección de "Keys", añadir una nueva en formato JSON
+5. Esta Key se descarga automáticamente y es la que podemos usar de forma local para usar PUB/SUB y colocarle el nombre de "cloud-conversio-test"
+6. En el archivo tareas.py y vistas.py, descomentar las lineas 17 a 19
+7. Para más información revisar el video: [Set up & use PubSub with Python](https://www.youtube.com/watch?v=xOtrCmPjal8&ab_channel=D-I-Ry)
 
 ## Ejecutar aplicacion en Ubuntu (Local)
 Primero se debe realizar la instalación de algunos programas, para ello revisar el README de la raiz del proyecto.

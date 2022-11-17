@@ -11,8 +11,6 @@ env/
 #Archvivos temporales
 *.pyc
 *.json
+*.log
+*.txt
 
-#Logs
-log_login.txt
-log_convert.txt
-notas.txt

@@ -15,8 +15,8 @@ load_dotenv()
 client = storage.Client(project = os.getenv('PROYECT_STORAGE'))
 bucket = client.get_bucket(os.getenv('BUCKET'))
 
-credentials_path = os.getcwd() + '/' + os.getenv('LOCAL_CREDENTIALS')
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
+#credentials_path = os.getcwd() + '/' + os.getenv('LOCAL_CREDENTIALS')
+#os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
 
 user_schema = UserSchema()
 file_schema = FileSchema()
