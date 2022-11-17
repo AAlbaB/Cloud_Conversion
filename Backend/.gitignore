@@ -10,7 +10,9 @@ env/
 
 #Archvivos temporales
 *.pyc
+*.json
 
 #Logs
 log_login.txt
 log_convert.txt
+notas.txt
