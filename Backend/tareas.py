@@ -1,6 +1,5 @@
 import os
 from datetime import datetime
-from celery import Celery
 from pydub import AudioSegment
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -19,14 +18,14 @@ os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
 
 timeout = 5.0
 subscriber = pubsub_v1.SubscriberClient()
-subscription_path = os.getenv('SUBSCRIPTION_LOGIN')
+subs_login = os.getenv('SUBSCRIPTION_LOGIN')
+subs_converter = os.getenv('SUBSCRIPTION_CONVERSION')
 
 PATH_LOGIN = os.getcwd() + '/logs/log_login.txt'
 PATH_CONVERT = os.getcwd() + '/logs/log_convert.txt'
 RUTA_CONVERTIDA = os.getcwd() + '/files/convertido'
 RUTA_ORIGINALES = os.getcwd()
 
-celery_app = Celery('__name__', broker = os.getenv('BROKER_URL_LOCAL'))
 load_engine = create_engine(os.getenv('DATABASE_URL'))
 Session = sessionmaker(bind = load_engine)
 session = Session()
@@ -36,15 +35,24 @@ def registrar_log(message):
         user = message.attributes.get('username')
         date = message.attributes.get('date')
         file.write('El usuario: {} - Inicio sesion: {}\n'.format(user, date))
-        print('Se leyo la tarea: {}'.format(message))
+        print('El usuario: {}, ha iniciado sesión: {}'.format(user, date))
     message.ack()
 
-streaming_pull_future = subscriber.subscribe(subscription_path, callback=registrar_log)
-print(f'Listening for messages on {subscription_path}')
+pull_login = subscriber.subscribe(subs_login, callback=registrar_log)
+print(f'Listening for messages on {subs_login}')
 
-@celery_app.task(name = 'convert_music')
-def convert_music(path_destino, old_format, new_format, file_origen, file_destino, task_id):
+def convert_music(message):
     
+    try:
+        old_format = message.attributes.get('old_format')
+        new_format = message.attributes.get('new_format')
+        file_origen = message.attributes.get('file_origen')
+        file_destino = message.attributes.get('file_destino')
+        task_id = message.attributes.get('task_id')
+
+    except Exception as e:
+        print ('-> A ocurrido un error obteniendo los datos de la tarea: ' + str(e))
+
     try: 
         blob = bucket.blob('originales/' + file_origen)
         blob.download_to_filename(file_origen)
@@ -74,7 +82,7 @@ def convert_music(path_destino, old_format, new_format, file_origen, file_destin
             session.commit()
 
         else:
-            print ('No se proporciono una extension valida {}'.format(file_origen))
+            print ('No se proporciono una extension valida {}'.format(old_format))
         
         mensaje = '-> El audio {}, se convirtio a : {}'.format(file_origen, new_format)
 
@@ -106,7 +114,11 @@ def convert_music(path_destino, old_format, new_format, file_origen, file_destin
     except Exception as e:
         mensaje = '-> A ocurrido un error en el envio del email'
 
+    message.ack()
     registrar_conversion(task_id, mensaje, datetime.utcnow())
+
+pull_converter = subscriber.subscribe(subs_converter, callback=convert_music)
+print(f'Listening for messages on {subs_converter}')
 
 def registrar_conversion(id_task, mensaje, fecha):
     try: 
@@ -118,10 +130,13 @@ def registrar_conversion(id_task, mensaje, fecha):
 
 with subscriber:
     try:
-        streaming_pull_future.result()
+        pull_login.result()
+        pull_converter.result()
     except TimeoutError:
-        streaming_pull_future.cancel()
-        streaming_pull_future.result()
+        pull_login.cancel()
+        pull_login.result()
+        pull_converter.cancel()
+        pull_converter.result()
 
     
 

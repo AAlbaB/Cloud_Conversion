@@ -3,7 +3,6 @@ from google.cloud import storage
 from google.cloud import pubsub_v1
 from sqlalchemy import desc
 from datetime import datetime
-from celery import Celery
 from dotenv import load_dotenv
 from flask_restful import Resource
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
@@ -15,7 +14,9 @@ from ..utils import validate_password
 load_dotenv()
 client = storage.Client(project = os.getenv('PROYECT_STORAGE'))
 bucket = client.get_bucket(os.getenv('BUCKET'))
-celery_app = Celery('__name__', broker = os.getenv('BROKER_REDIS'))
+
+credentials_path = os.getcwd() + '/' + os.getenv('LOCAL_CREDENTIALS')
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
 
 user_schema = UserSchema()
 file_schema = FileSchema()
@@ -23,13 +24,6 @@ file_schema = FileSchema()
 RUTA_CONVERTIDA = os.getcwd() + '/files/convertido' 
 RUTA_ORIGINALES = os.getcwd() + '/files/originales'
 FORMATOS = ['mp3', 'ogg', 'wav']
-
-credentials_path = os.getcwd() + '/' + os.getenv('LOCAL_CREDENTIALS')
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
-
-@celery_app.task(name = 'convert_music')
-def convert_music(*args):
-    pass
 
 class VistaUsers(Resource):
 
@@ -188,7 +182,6 @@ class VistaTasksUser(Resource):
             path_origen = f'{RUTA_ORIGINALES}/{file_origen}'
 
             file_destino = f'{user_name}_{date_actual}_{base_file}.{new_format}'.replace(' ','_')
-            path_destino = f'{RUTA_CONVERTIDA}/{file_destino}'
 
             try:
                 file.save(path_origen)
@@ -210,9 +203,23 @@ class VistaTasksUser(Resource):
             user.files.append(new_task)
             db.session.commit()
 
-            task_id = new_task.id
-            args = (path_destino, old_format, new_format, file_origen, file_destino, task_id)
-            convert_music.apply_async(args = args)
+            try:
+                task_id = new_task.id
+                publisher = pubsub_v1.PublisherClient()
+                topic_path = os.getenv('TOPIC_CONVERSION')
+                data = 'Nueva tarea de conversion'
+                data = data.encode('utf-8')
+                attributes = {
+                    'old_format': str(old_format),
+                    'new_format': str(new_format),
+                    'file_origen': str(file_origen),
+                    'file_destino': str(file_destino),
+                    'task_id': str(task_id)
+                }
+                publisher.publish(topic_path, data, **attributes)
+
+            except Exception as e:
+                return {'mensaje':'Error: al publicar la tarea', 'error': str(e)}
 
             return file_schema.dump(new_task)
 
@@ -319,7 +326,6 @@ class VistaTask(Resource):
                 return {'mensaje':'Error: El audio original ya tiene ese formato'}, 400
 
             file_destino = f'{user_name}_{date_actual}_{name_origen}.{new_format}'.replace(' ','_')
-            path_destino = f'{RUTA_CONVERTIDA}/{file_destino}'
 
             try:
                 if put_task.status == 'processed':
@@ -333,9 +339,23 @@ class VistaTask(Resource):
                 put_task.status = 'uploaded'
                 db.session.commit()
 
-                task_id = put_task.id
-                args = (path_destino, old_format, new_format, file_origen, file_destino, task_id)
-                convert_music.apply_async(args = args)
+                try:
+                    task_id = put_task.id
+                    publisher = pubsub_v1.PublisherClient()
+                    topic_path = os.getenv('TOPIC_CONVERSION')
+                    data = 'Nueva tarea de conversion'
+                    data = data.encode('utf-8')
+                    attributes = {
+                        'old_format': str(old_format),
+                        'new_format': str(new_format),
+                        'file_origen': str(file_origen),
+                        'file_destino': str(file_destino),
+                        'task_id': str(task_id)
+                    }
+                    publisher.publish(topic_path, data, **attributes)
+
+                except Exception as e:
+                        return {'mensaje':'Error: al publicar la tarea', 'error': str(e)}
 
                 return {'mensaje':'La tarea fue actualizada para conversion'}, 200
 
