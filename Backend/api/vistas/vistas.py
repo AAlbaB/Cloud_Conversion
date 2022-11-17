@@ -24,12 +24,8 @@ RUTA_CONVERTIDA = os.getcwd() + '/files/convertido'
 RUTA_ORIGINALES = os.getcwd() + '/files/originales'
 FORMATOS = ['mp3', 'ogg', 'wav']
 
-credentials_path = os.getcwd() + '/cloud-conversion-test.json'
+credentials_path = os.getcwd() + '/' + os.getenv('LOCAL_CREDENTIALS')
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
-
-@celery_app.task(name = 'registrar_login')
-def registrar_log(*args):
-    pass
 
 @celery_app.task(name = 'convert_music')
 def convert_music(*args):
@@ -124,7 +120,7 @@ class VistaLogIn(Resource):
 
             if usuario:
                 publisher = pubsub_v1.PublisherClient()
-                topic_path = 'projects/cloud-conversion-13822/topics/register-login'
+                topic_path = os.getenv('TOPIC_LOGIN')
                 data = 'Nuevo login de usuario'
                 data = data.encode('utf-8')
                 attributes = {

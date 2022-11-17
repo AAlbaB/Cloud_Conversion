@@ -14,11 +14,12 @@ load_dotenv()
 client = storage.Client(project = os.getenv('PROYECT_STORAGE'))
 bucket = client.get_bucket(os.getenv('BUCKET'))
 
-credentials_path = os.getcwd() + '/cloud-conversion-test.json'
+credentials_path = os.getcwd() + '/' + os.getenv('LOCAL_CREDENTIALS')
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
+
 timeout = 5.0
 subscriber = pubsub_v1.SubscriberClient()
-subscription_path = 'projects/cloud-conversion-13822/subscriptions/register-login-sub'
+subscription_path = os.getenv('SUBSCRIPTION_LOGIN')
 
 PATH_LOGIN = os.getcwd() + '/logs/log_login.txt'
 PATH_CONVERT = os.getcwd() + '/logs/log_convert.txt'
@@ -30,7 +31,6 @@ load_engine = create_engine(os.getenv('DATABASE_URL'))
 Session = sessionmaker(bind = load_engine)
 session = Session()
 
-#@celery_app.task(name = 'registrar_login')
 def registrar_log(message):
     with open(PATH_LOGIN, 'a+') as file:
         user = message.attributes.get('username')
