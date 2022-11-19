@@ -10,13 +10,9 @@ url="https://github.com/AAlbaB/Cloud_Conversion.git"
 
 # ----------------------------------------------------------------------------
 
-echo "Inicia la configuración instancia web "`date '+%Y%m%d%H%M%S'`
+echo "Inicia la configuración del worker "`date '+%Y%m%d%H%M%S'`
 
-# Preparar el sistema para la instalación de los servicios de paquetes basicos
-
-apt-get update -y
-apt-get install python3 python3-venv python3-pip python3-dev python3-flask -y 
-apt-get install git ffmpeg redis-server -y
+# Se debe tener presente que esta instalación se debe realizar sobre una instancia que previamente, tenga instalado los paquetes del README
 
 # Descarga del repositorio los archivos requeridos
 mkdir -p /home/$user
@@ -44,6 +40,4 @@ cd $path_api
 python3 -m venv venv
 . venv/bin/activate
 pip install -r requirements.txt
-deactivate
-
-echo "Worker desplegado: "`date '+%Y%m%d%H%M%S'`
+python tareas.py

@@ -17,6 +17,7 @@ Se deben realizar las siguientes instalaciones para ejecutar el programa
 5. Instalar paquete de flask: `sudo apt install python3-flask`
 6. Instalar paquete de audios: `sudo apt install ffmpeg`
 7. Instalar Git: `sudo apt install git`
+8. Instalar Nginx: `sudo apt install nginx`
 
 ## Instalaciones Windows:
 Para esta entrega se puede utilizar de forma local en sistema operativo windows, para ello se debe realizar las siguientes instalaciones

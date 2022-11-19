@@ -104,16 +104,16 @@ def convert_music(message):
          
     log_convert.info('Para la tarea con Id: {}, Se registro: {}'.format(task_id, mensaje))
                             
-    try: 
-        user = session.query(User).get(new_task.user)
-        send_email(user.email, new_task.fileName, new_task.newFormat)
-        mensaje = 'Se envio un email al usuario: {}'.format(user.username)
+    # try: 
+    #     user = session.query(User).get(new_task.user)
+    #     send_email(user.email, new_task.fileName, new_task.newFormat)
+    #     mensaje = 'Se envio un email al usuario: {}'.format(user.username)
 
-    except Exception as e:
-        mensaje = 'A ocurrido un error en el envio del email ' + str(e)
+    # except Exception as e:
+    #     mensaje = 'A ocurrido un error en el envio del email ' + str(e)
 
-    message.ack()
-    log_convert.info('Para la tarea con Id: {}, Se registro: {}'.format(task_id, mensaje))
+    # message.ack()
+    # log_convert.info('Para la tarea con Id: {}, Se registro: {}'.format(task_id, mensaje))
 
 def setup_logger(name, log_file, level=logging.INFO):
 

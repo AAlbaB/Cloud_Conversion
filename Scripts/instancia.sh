@@ -16,11 +16,7 @@ ip=`ip a | grep "inet " | grep "inet 10" | cut -d ' ' -f 6 | cut -d '/' -f 1`
 
 echo "Inicia la configuración instancia web "`date '+%Y%m%d%H%M%S'`
 
-# Preparar el sistema para la instalación de los servicios de paquetes basicos
-
-apt-get update -y
-apt-get install git python3-venv python3-pip python3-dev build-essential python3-flask -y 
-apt-get install libssl-dev libffi-dev python3-setuptools nginx ffmpeg -y
+# Se debe tener presente que esta instalación se debe realizar sobre una instancia que previamente, tenga instalado los paquetes del README
 
 # Descarga del repositorio los archivos requeridos
 mkdir -p /home/$user
