@@ -2,7 +2,7 @@
 Esta entrega del proyecto, hace referencia a la entrega cuatro: DISEÑO E IMPLEMENTACIÓN DE UNA APLICACIÓN WEB ESCALABLE EN LA NUBE PÚBLICA – ESCALABILIDAD EN EL BACKGROUND.
 
 **Nota:**
-Las instrucciones de instalaciones y otros detalles se encuentran la Wiki, Entrega 4 [Aqui.]()<br>
+Las instrucciones de instalaciones y otros detalles se encuentran la Wiki, Entrega 4 [Aqui.](https://github.com/AAlbaB/Cloud_Conversion/wiki/Instalaci%C3%B3n-escalabilidad-del-Backend)<br>
 Se debe tener en cuenta que para el correcto funcionamiento del worker, se deben realizar las siguientes instalaciones en las máquinas virtuales.
 
 ## Instalaciones Ubuntu:
@@ -28,9 +28,10 @@ Para esta entrega se puede utilizar de forma local en sistema operativo windows,
 2. Descargar e instalar Git: [AQUI](https://git-scm.com/download/win)
 3. Descargar e instalar ffmpeg: [AQUI](https://www.wikihow.com/Install-FFmpeg-on-Windows), verificar instalación con: `ffmpeg -version`
 
-## Autenticarse con Gcloud:
+## Autenticarse con GCLOUD:
 Para realizar la autenticación en el equipo local, se debe realizar los siguientes pasos:
-1. Descarga el instalador de la CLI de Google Cloud: [AQUI](https://cloud.google.com/sdk/docs/install?hl=es-419#windows). **Nota:** Este proceso puede tomar algunos minutos.
+1. Descarga el instalador de la CLI de Google Cloud: [AQUI](https://cloud.google.com/sdk/docs/install?hl=es-419#windows).<br> 
+**Nota:** Este proceso puede tomar algunos minutos.
 2. Se debe reiniciar el equipo para que se tomen los cambios necesarios.
 3. En el proyecto de GCP, en el apartado de "IAM", se debe tener registrado el correo electronico de la persona que va a efectuar los cambios, ya que con este se otorga los permiso para el proyecto, se recomienda que se otorguen todos los permisos con "Owner" del proyecto.
 4. Autenticar con el siguiente comando: `gcloud auth login`, esto abrira una ventana del navegador, donde se debe autenticar con las credenciales del correo del punto anterior.

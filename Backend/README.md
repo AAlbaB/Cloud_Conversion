@@ -1,4 +1,4 @@
-# Ejecución de la aplicación LOCAL
+# Ejecución de la aplicación de forma local
 En esta serie de instrucciones, se podrá ejecutar la aplicación de forma local en los sistemas operativos Linux-Ubuntu y Windows
 
 ## Obtener credenciales
