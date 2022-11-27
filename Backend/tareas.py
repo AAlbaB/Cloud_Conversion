@@ -1,6 +1,5 @@
 import os
 import logging
-from datetime import datetime
 from pydub import AudioSegment
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -13,9 +12,6 @@ from google.cloud import pubsub_v1
 load_dotenv()
 client = storage.Client(project = os.getenv('PROYECT_STORAGE'))
 bucket = client.get_bucket(os.getenv('BUCKET'))
-
-credentials_path = os.getcwd() + '/' + os.getenv('LOCAL_CREDENTIALS')
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
 
 timeout = 5.0
 subscriber = pubsub_v1.SubscriberClient()
