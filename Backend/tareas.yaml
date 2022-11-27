@@ -1,6 +1,6 @@
 runtime: python
 env: flex
-entrypoint: gunicorn -b :$PORT app:app
+entrypoint: gunicorn -b :$PORT tareas:app
 
 env_variables:
   PROJECT_ID: 'utility-subset-367815'
