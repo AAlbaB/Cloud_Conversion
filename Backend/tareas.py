@@ -99,15 +99,17 @@ def convert_music(message):
         mensaje = 'A ocurrido un error subiendo el archivo convertido: ' + str(e)
          
     log_convert.info('Para la tarea con Id: {}, Se registro: {}'.format(task_id, mensaje))
-                            
-    try: 
-        user = session.query(User).get(new_task.user)
-        send_email(user.email, new_task.fileName, new_task.newFormat)
-        mensaje = 'Se envio un email al usuario: {}'.format(user.username)
 
-    except Exception as e:
-        mensaje = 'A ocurrido un error en el envio del email ' + str(e)
-        
+    if new_task.status == 'processed':                      
+        try: 
+            user = session.query(User).get(new_task.user)
+            send_email(user.email, new_task.fileName, new_task.newFormat)
+            mensaje = 'Se envio un email al usuario: {}'.format(user.username)
+
+        except Exception as e:
+            mensaje = 'A ocurrido un error en el envio del email ' + str(e)
+            
+    mensaje = 'A ocurrido un error en el envio del email ' + str(e)   
     log_convert.info('Para la tarea con Id: {}, Se registro: {}'.format(task_id, mensaje))
     message.ack()
 
