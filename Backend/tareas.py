@@ -108,8 +108,8 @@ def convert_music(message):
 
         except Exception as e:
             mensaje = 'A ocurrido un error en el envio del email ' + str(e)
-            
-    mensaje = 'A ocurrido un error en el envio del email ' + str(e)   
+
+    mensaje = 'A ocurrido un error en el envio del email '  
     log_convert.info('Para la tarea con Id: {}, Se registro: {}'.format(task_id, mensaje))
     message.ack()
 
