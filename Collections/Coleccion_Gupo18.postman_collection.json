@@ -1,8 +1,8 @@
 {
 	"info": {
 		"_postman_id": "76e4ea8a-530f-43dd-9a00-e04bf2f9596a",
-		"name": "Coleccion_Gupo18",
-		"description": "### API para la aplicación Cloud Conversion\n\n1. La API se puede utilizar en cualquier aplicación o manejador de APIs, se sugiere la utilización de POSTMAN.  \n    \n2. La API se encuentra desplegada en instancias de GCP, la cuales se pueden acceder mediante el balanceador de cargas: `http://IP_BALANCEADEAR`\n    \n\n### Comandos y Consultas desde la API\n\n1. Creación de un usuario: POST `/api/auth/signup`\n2. Ingreso de usuario: POST `/api/auth/login`\n3. Ver todas las tareas de un usuario: GET `/api/tasks`\n4. Crear una tarea de un usuario: POST `/api/tasks`\n5. Ver una tarea específica: GET `/api/tasks/`\n6. Actualizar una tarea específica: PUT `/api/tasks/`\n7. Eliminar una tarea específica: DELETE `/api/tasks/`\n8. Descargar un archivo GET `/api/files/`",
+		"name": "Coleccion Gupo 18",
+		"description": "### API para la aplicación Cloud Conversion\n\n1. La API se puede utilizar en cualquier aplicación o manejador de APIs, se sugiere la utilización de POSTMAN.\n2. La API se encuentra desplegada en App Engine de GCP el cual se accede por: [cloud-conversion-13822.wn.r.appspot.com](https://cloud-conversion-13822.wn.r.appspot.com/)\n    \n\n### Comandos y Consultas desde la API\n\n1. Creación de un usuario: POST `/api/auth/signup`\n2. Ingreso de usuario: POST `/api/auth/login`\n3. Ver todas las tareas de un usuario: GET `/api/tasks`\n4. Crear una tarea de un usuario: POST `/api/tasks`\n5. Ver una tarea específica: GET `/api/tasks/`\n6. Actualizar una tarea específica: PUT `/api/tasks/`\n7. Eliminar una tarea específica: DELETE `/api/tasks/`\n8. Descargar un archivo GET `/api/files/`",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "20261140"
 	},
@@ -14,7 +14,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"username\": \"NewUser\",\n    \"password\": \"NewPass1478\",\n    \"password_again\": \"NewPass1478\",\n    \"email\": \"newUser01@gmail.com\"\n}",
+					"raw": "{\n    \"username\": \"AndresAlba\",\n    \"password\": \"PassBien1518\",\n    \"password_again\": \"PassBien1518\",\n    \"email\": \"andresalbab13@gmail.com\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -102,7 +102,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"username\": \"NewUser\",\n    \"password\": \"NewPass1478\"\n}",
+					"raw": "{\n    \"username\": \"AndresAlba\",\n    \"password\": \"PassBien1518\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -206,7 +206,7 @@
 					"formdata": []
 				},
 				"url": {
-					"raw": "{{base_url}}/api/tasks?max=10&order=0",
+					"raw": "{{base_url}}/api/tasks?max=20&order=0",
 					"host": [
 						"{{base_url}}"
 					],
@@ -217,7 +217,7 @@
 					"query": [
 						{
 							"key": "max",
-							"value": "10"
+							"value": "20"
 						},
 						{
 							"key": "order",
@@ -313,7 +313,7 @@
 						{
 							"key": "fileName",
 							"type": "file",
-							"src": "/C:/Users/anosc/Desktop/Desarrollo de Software en la nube/AudioPruebaOGG.ogg"
+							"src": "/C:/Users/anosc/Desktop/Desarrollo de Software en la nube/CancionOGG.ogg"
 						},
 						{
 							"key": "newFormat",
@@ -500,7 +500,7 @@
 					"formdata": [
 						{
 							"key": "newFormat",
-							"value": "ogg",
+							"value": "wav",
 							"type": "default"
 						}
 					]

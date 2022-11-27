@@ -3,7 +3,7 @@
 	"values": [
 		{
 			"key": "base_url",
-			"value": "http://34.111.127.4",
+			"value": "https://cloud-conversion-13822.wn.r.appspot.com",
 			"type": "default",
 			"enabled": true
 		},
@@ -21,13 +21,13 @@
 		},
 		{
 			"key": "name_file",
-			"value": "AudioPruebaWAV",
+			"value": "27112022191051",
 			"type": "default",
 			"enabled": true
 		}
 	],
 	"name": "Globals",
 	"_postman_variable_scope": "globals",
-	"_postman_exported_at": "2022-11-19T17:22:41.502Z",
-	"_postman_exported_using": "Postman/10.3.5"
+	"_postman_exported_at": "2022-11-27T22:24:37.727Z",
+	"_postman_exported_using": "Postman/10.5.2"
 }
